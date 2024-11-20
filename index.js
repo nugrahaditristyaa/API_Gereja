@@ -14,20 +14,6 @@ const pool = mysql.createPool({
     database: "sql12744733",
 });
 
-app.get("/jumlahJemaat", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT COUNT(*) as total_jemaat from jemaat", (err, rows) => {
-        connection.release();
-        if (!err) {
-            res.status(200).json({ data: rows });
-        } else {
-            res.status(500).json({ error: err });
-        }
-        });
-    });
-});
-
 app.get("/jemaat", (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) throw err;
@@ -42,9 +28,48 @@ app.get("/jemaat", (req, res) => {
     });
 });
 
-app.get("/test", (req, res) => {
-    res.status(200).json({ data: "Hello World" });
+app.get("/jemaat/jumlah", (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) throw err;
+        connection.query("SELECT COUNT(*) as jumlah_jemaat from jemaat", (err, rows) => {
+        connection.release();
+        if (!err) {
+            res.status(200).json({ data: rows });
+        } else {
+            res.status(500).json({ error: err });
+        }
+        });
+    });
 });
+
+app.get("/majelis/jumlah", (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) throw err;
+        connection.query("SELECT COUNT(*) as jumlah_majelis from majelis_jemaat", (err, rows) => {
+        connection.release();
+        if (!err) {
+            res.status(200).json({ data: rows });
+        } else {
+            res.status(500).json({ error: err });
+        }
+        });
+    });
+});
+
+app.get("/pegawai/jumlah", (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) throw err;
+        connection.query("SELECT COUNT(*) as jumlah_pegawai from pegawai_dayu", (err, rows) => {
+        connection.release();
+        if (!err) {
+            res.status(200).json({ data: rows });
+        } else {
+            res.status(500).json({ error: err });
+        }
+        });
+    });
+});
+
 
 
 // app.get("/:id", (req, res) => {
