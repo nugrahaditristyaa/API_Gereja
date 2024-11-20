@@ -42,6 +42,20 @@ app.get("/jemaat/jumlah", (req, res) => {
     });
 });
 
+app.get("/jemaat/sebaranWilayah", (req, res) => {
+    pool.getConnection((err, connection) => {
+        if (err) throw err;
+        connection.query("SELECT kode_wilayah, COUNT(*) as sebaran_wilayah from jemaat", (err, rows) => {
+        connection.release();
+        if (!err) {
+            res.status(200).json({ data: rows });
+        } else {
+            res.status(500).json({ error: err });
+        }
+        });
+    });
+});
+
 app.get("/majelis/jumlah", (req, res) => {
     pool.getConnection((err, connection) => {
         if (err) throw err;
