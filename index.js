@@ -8,16 +8,10 @@ const jsonParser = bodyParser.json();
 const mysql = require("mysql");
 const pool = mysql.createPool({
   connectionLimit: 10,
-  host: "repo.ukdw.ac.id",
+  host: "repo.ukdw.ac.id/p/",
   user: "71210677",
   password: "pXRyC@f-Su](46RR",
   database: "71210677",
-});
-
-app.get("/test", (req, res) => {
-  if (res) {
-    res.status(200).json({ data: "Hello World" });
-  }
 });
 
 app.get("/jemaat", (req, res) => {
