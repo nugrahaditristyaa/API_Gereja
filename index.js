@@ -14,6 +14,12 @@ const pool = mysql.createPool({
   database: "71210677",
 });
 
+app.get("/test", (req, res) => {
+  if (res) {
+    res.status(200).json({ data: "Hello World" });
+  }
+});
+
 app.get("/jemaat", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err;
