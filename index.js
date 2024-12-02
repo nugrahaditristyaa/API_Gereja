@@ -1,90 +1,100 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 const jsonParser = bodyParser.json();
 
 const mysql = require("mysql");
 const pool = mysql.createPool({
-    connectionLimit: 10,
-    host: "sql12.freesqldatabase.com",
-    user: "sql12744733",
-    password: "15i6ln7ai9",
-    database: "sql12744733",
+  connectionLimit: 10,
+  host: "repo.ukdw.ac.id",
+  user: "71210677",
+  password: "pXRyC@f-Su](46RR",
+  database: "71210677",
 });
 
 app.get("/jemaat", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT * from jemaat", (err, rows) => {
-        connection.release();
-        if (!err) {
-            res.status(200).json({ data: rows });
-        } else {
-            res.status(500).json({ error: err });
-        }
-        });
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query("SELECT * from jemaat", (err, rows) => {
+      connection.release();
+      if (!err) {
+        res.status(200).json({ data: rows });
+      } else {
+        res.status(500).json({ error: err });
+      }
     });
+  });
 });
 
 app.get("/jemaat/jumlah", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT COUNT(*) as jumlah_jemaat from jemaat", (err, rows) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT COUNT(*) as jumlah_jemaat from jemaat",
+      (err, rows) => {
         connection.release();
         if (!err) {
-            res.status(200).json({ data: rows });
+          res.status(200).json({ data: rows });
         } else {
-            res.status(500).json({ error: err });
+          res.status(500).json({ error: err });
         }
-        });
-    });
+      }
+    );
+  });
 });
 
 app.get("/jemaat/sebaranWilayah", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT kode_wilayah, COUNT(*) as jumlah from jemaat GROUP BY kode_wilayah", (err, rows) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT kode_wilayah, COUNT(*) as jumlah from jemaat GROUP BY kode_wilayah",
+      (err, rows) => {
         connection.release();
         if (!err) {
-            res.status(200).json({ data: rows });
+          res.status(200).json({ data: rows });
         } else {
-            res.status(500).json({ error: err });
+          res.status(500).json({ error: err });
         }
-        });
-    });
+      }
+    );
+  });
 });
 
 app.get("/majelis/jumlah", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT COUNT(*) as jumlah_majelis from majelis_jemaat", (err, rows) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT COUNT(*) as jumlah_majelis from majelis_jemaat",
+      (err, rows) => {
         connection.release();
         if (!err) {
-            res.status(200).json({ data: rows });
+          res.status(200).json({ data: rows });
         } else {
-            res.status(500).json({ error: err });
+          res.status(500).json({ error: err });
         }
-        });
-    });
+      }
+    );
+  });
 });
 
 app.get("/pegawai/jumlah", (req, res) => {
-    pool.getConnection((err, connection) => {
-        if (err) throw err;
-        connection.query("SELECT COUNT(*) as jumlah_pegawai from pegawai_dayu", (err, rows) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT COUNT(*) as jumlah_pegawai from pegawai_dayu",
+      (err, rows) => {
         connection.release();
         if (!err) {
-            res.status(200).json({ data: rows });
+          res.status(200).json({ data: rows });
         } else {
-            res.status(500).json({ error: err });
+          res.status(500).json({ error: err });
         }
-        });
-    });
+      }
+    );
+  });
 });
-
-
 
 // app.get("/:id", (req, res) => {
 //     pool.getConnection((err, connection) => {
@@ -163,5 +173,5 @@ app.get("/pegawai/jumlah", (req, res) => {
 // });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});
