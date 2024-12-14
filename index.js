@@ -337,6 +337,39 @@ app.get("/pegawai/jumlah", (req, res) => {
   });
 });
 
+app.get("/jemaat/ulangTahun", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_induk_jemaat,
+        kode_wilayah,
+        nama, 
+        DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir, 
+        YEAR(CURDATE()) - YEAR(tgl_lahir) as umur 
+      FROM jemaat 
+      WHERE MONTH(tgl_lahir) = MONTH(CURDATE())
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 // app.get("/:id", (req, res) => {
 //     pool.getConnection((err, connection) => {
 //         if (err) throw err;
