@@ -348,7 +348,7 @@ app.get("/jemaat/ulangTahun", (req, res) => {
     // Hapus filter bulan untuk menampilkan semua data
     const query = `
       SELECT 
-        no_urut
+        no_urut,
         no_induk_jemaat,
         kode_wilayah,
         nama, 
