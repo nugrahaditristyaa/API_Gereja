@@ -345,6 +345,7 @@ app.get("/jemaat/ulangTahun", (req, res) => {
       return;
     }
 
+    // Hapus filter bulan untuk menampilkan semua data
     const query = `
       SELECT 
         no_induk_jemaat,
@@ -352,8 +353,7 @@ app.get("/jemaat/ulangTahun", (req, res) => {
         nama, 
         DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir, 
         YEAR(CURDATE()) - YEAR(tgl_lahir) as umur 
-      FROM jemaat 
-      WHERE MONTH(tgl_lahir) = MONTH(CURDATE())
+      FROM jemaat
     `;
 
     connection.query(query, (err, rows) => {
@@ -369,6 +369,7 @@ app.get("/jemaat/ulangTahun", (req, res) => {
     });
   });
 });
+
 
 // app.get("/:id", (req, res) => {
 //     pool.getConnection((err, connection) => {
