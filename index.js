@@ -345,7 +345,6 @@ app.get("/jemaat/ulangTahun", (req, res) => {
       return;
     }
 
-    // Hapus filter bulan untuk menampilkan semua data
     const query = `
       SELECT 
         no_urut,
@@ -370,6 +369,66 @@ app.get("/jemaat/ulangTahun", (req, res) => {
   });
 });
 
+app.get("/jemaat/sebaranPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT
+      d.pelayanan_diikuti,
+      j.kode_wilayah,
+      COUNT(*) AS total_warga
+    FROM
+      jemaat j
+    JOIN
+      detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    GROUP BY
+      j.kode_wilayah, d.pelayanan_diikuti
+    ORDER BY
+      total_warga DESC
+    LIMIT 4
+  `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      const transformedData = rows.reduce((acc, row) => {
+        const wilayah = acc.find((w) => w.kode_wilayah === row.kode_wilayah);
+
+        if (!wilayah) {
+          acc.push({
+            kode_wilayah: row.kode_wilayah,
+            pelayanans: [
+              {
+                pelayanan_diikuti: row.pelayanan_diikuti,
+                total_warga: row.total_warga,
+              },
+            ],
+          });
+        } else {
+          wilayah.pelayanans.push({
+            pelayanan_diikuti: row.pelayanan_diikuti,
+            total_warga: row.total_warga,
+          });
+        }
+
+        return acc;
+      }, []);
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
 
 // app.get("/:id", (req, res) => {
 //     pool.getConnection((err, connection) => {
