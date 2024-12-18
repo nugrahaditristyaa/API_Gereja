@@ -661,7 +661,7 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
         SUM(*) AS total 
       FROM detail_jemaat 
       GROUP BY kode_wilayah, kondisi_fisik
-      ORDER BY kode_wilayah, kategori
+      ORDER BY kode_wilayah, kondisi_fisik
     `;
 
     connection.query(query, (err, rows) => {
