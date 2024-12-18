@@ -630,9 +630,9 @@ app.get("/jemaat/sebaranDisabilitas", (req, res) => {
 
       const total = rows.reduce(
         (acc, row) => {
-          if (row.kondisi_fisik === 'Non Disabilitas') {
+          if (row.kondisi_fisik === "Non Disabilitas") {
             acc.totalNonDisabilitas += row.jumlah;
-          } else if (row.kondisi_fisik === 'Disabilitas') {
+          } else if (row.kondisi_fisik === "Disabilitas") {
             acc.totalDisabilitas += row.jumlah;
           }
           return acc;
@@ -643,6 +643,44 @@ app.get("/jemaat/sebaranDisabilitas", (req, res) => {
         data: rows,
         totals: total,
       });
+    });
+  });
+});
+app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        kondisi_fisik,
+        SUM(*) AS total 
+      FROM detail_jemaat 
+      GROUP BY kode_wilayah, kondisi_fisik
+      ORDER BY kode_wilayah, kategori
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = results.reduce((acc, row) => {
+        const { kode_wilayah, kondisi_fisik, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { "Disabilitas": 0, "Non Disabilitas": 0 };
+        }
+        acc[wilayah_id][kondisi_fisik] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
     });
   });
 });
