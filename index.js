@@ -472,6 +472,39 @@ app.get("/jemaat/detailGolonganDarah", (req, res) => {
   });
 });
 
+app.get("/jemaat/detailGender", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_urut,
+        no_induk_jemaat,
+        kode_wilayah,
+        nama,
+        jenis_kelamin,
+        telepon
+      FROM jemaat 
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/jemaat/sebaranPelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
