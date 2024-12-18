@@ -369,6 +369,42 @@ app.get("/jemaat/ulangTahun", (req, res) => {
   });
 });
 
+app.get("/jemaat/detailPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.no_urut,
+        j.no_induk_jemaat,
+        j.kode_wilayah,
+        j.nama, 
+        d.pelayanan_diikuti,
+        j.telepon
+      FROM 
+        jemaat j
+      JOIN
+        detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/jemaat/sebaranPelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
@@ -379,8 +415,8 @@ app.get("/jemaat/sebaranPelayanan", (req, res) => {
 
     const query = `
       SELECT
-      d.pelayanan_diikuti,
       j.kode_wilayah,
+      d.pelayanan_diikuti,
       COUNT(*) AS total_warga
     FROM
       jemaat j
