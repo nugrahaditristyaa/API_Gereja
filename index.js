@@ -352,7 +352,7 @@ app.get("/jemaat/ulangTahun", (req, res) => {
         no_induk_jemaat,
         kode_wilayah,
         nama, 
-        DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir, 
+        DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir
       FROM jemaat
     `;
 
