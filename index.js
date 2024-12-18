@@ -505,6 +505,43 @@ app.get("/jemaat/detailGender", (req, res) => {
   });
 });
 
+app.get("/jemaat/detailDisabilitas", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.no_urut,
+        j.no_induk_jemaat,
+        j.kode_wilayah,
+        j.nama, 
+        d.kondisi_fisik,
+        d.deskripsi_disabilitas,
+        j.telepon
+      FROM 
+        jemaat j
+      JOIN
+        detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/jemaat/sebaranPelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
