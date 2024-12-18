@@ -353,7 +353,6 @@ app.get("/jemaat/ulangTahun", (req, res) => {
         kode_wilayah,
         nama, 
         DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir, 
-        YEAR(CURDATE()) - YEAR(tgl_lahir) as umur 
       FROM jemaat
     `;
 
