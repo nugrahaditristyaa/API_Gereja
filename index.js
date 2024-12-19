@@ -729,9 +729,10 @@ app.get("/jemaat/tabelwilayah", (req, res) => {
 
     const query = `
       SELECT 
-        kode_wilayah
-      FROM jemaat 
-      JOIN kode_wilayah ON jemaat.kode_wilayah = kode_wilayah.kode_wilayah
+        j.kode_wilayah,
+        k.kode_wilayah
+      FROM jemaat j
+      JOIN kode_wilayah k ON j.kode_wilayah = k.kode_wilayah
     `;
 
     connection.query(query, (err, rows) => {
