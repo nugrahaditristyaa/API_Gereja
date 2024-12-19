@@ -656,12 +656,13 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
 
     const query = `
       SELECT 
-        kode_wilayah,
-        kondisi_fisik,
-        SUM(*) AS total 
-      FROM detail_jemaat 
-      GROUP BY kode_wilayah, kondisi_fisik
-      ORDER BY kode_wilayah, kondisi_fisik
+        j.kode_wilayah,
+        d.kondisi_fisik,
+        COUNT(*) AS total 
+      FROM detail_jemaat d
+      JOIN jemaat j ON d.no_induk_jemaat = j.no_induk_jemaat
+      GROUP BY j.kode_wilayah, d.kondisi_fisik
+      ORDER BY j.kode_wilayah, d.kondisi_fisik DESC
     `;
 
     connection.query(query, (err, rows) => {
@@ -672,12 +673,12 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
         res.status(500).send("Gagal mengambil data jemaat.");
         return;
       }
-      const data = results.reduce((acc, row) => {
+      const data = rows.reduce((acc, row) => {
         const { kode_wilayah, kondisi_fisik, total } = row;
         if (!acc[kode_wilayah]) {
           acc[kode_wilayah] = { "Disabilitas": 0, "Non Disabilitas": 0 };
         }
-        acc[wilayah_id][kondisi_fisik] = total;
+        acc[kode_wilayah][kondisi_fisik] = total;
         return acc;
       }, {});
       res.status(200).json({ data: rows });
