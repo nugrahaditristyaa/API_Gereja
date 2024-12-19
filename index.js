@@ -60,63 +60,6 @@ app.post("/tambahDataJemaat", (req, res) => {
     alamat_rumah,
   } = req.body;
 
-  app.post("/tambahDataPegawai", (req, res) => {
-    const {
-      nama,
-      posisi,
-      tanggal_masuk,
-      tanggal_keluar,
-      status_aktif,
-      kode_user,
-    } = req.body;
-
-    // Validasi data jika diperlukan
-    if (!nama || !posisi || !tanggal_masuk || !status_aktif || !kode_user) {
-      return res
-        .status(400)
-        .json({ message: "Semua field wajib diisi, kecuali tanggal_keluar!" });
-    }
-
-    // Koneksi ke database dan eksekusi query
-    pool.getConnection((err, connect) => {
-      if (err) {
-        console.error("Error saat koneksi ke database:", err);
-        return res.status(500).json({ message: "Koneksi ke database gagal." });
-      }
-
-      const query = `
-        INSERT INTO pegawai_dayu (
-          nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
-        ) VALUES (?, ?, ?, ?, ?, ?)
-      `;
-
-      const values = [
-        nama,
-        posisi,
-        tanggal_masuk,
-        tanggal_keluar || null,
-        status_aktif,
-        kode_user,
-      ];
-
-      connect.query(query, values, (err, results) => {
-        connect.release();
-
-        if (err) {
-          console.error("Error saat menambahkan data pegawai:", err);
-          return res
-            .status(500)
-            .json({ message: "Gagal menambahkan data pegawai." });
-        }
-
-        return res.status(201).json({
-          message: "Data pegawai berhasil ditambahkan.",
-          dataId: results.insertId,
-        });
-      });
-    });
-  });
-
   const query = `
     INSERT INTO detail_jemaat (
       no_induk_jemaat,
@@ -199,6 +142,62 @@ app.post("/tambahDataJemaat", (req, res) => {
   });
 });
 
+app.post("/tambahDataPegawai", (req, res) => {
+  const {
+    nama,
+    posisi,
+    tanggal_masuk,
+    tanggal_keluar,
+    status_aktif,
+    kode_user,
+  } = req.body;
+
+  // Validasi data jika diperlukan
+  if (!nama || !posisi || !tanggal_masuk || !status_aktif || !kode_user) {
+    return res
+      .status(400)
+      .json({ message: "Semua field wajib diisi, kecuali tanggal_keluar!" });
+  }
+
+  // Koneksi ke database dan eksekusi query
+  pool.getConnection((err, connect) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      return res.status(500).json({ message: "Koneksi ke database gagal." });
+    }
+
+    const query = `
+      INSERT INTO pegawai_dayu (
+        nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+      nama,
+      posisi,
+      tanggal_masuk,
+      tanggal_keluar || null,
+      status_aktif,
+      kode_user,
+    ];
+
+    connect.query(query, values, (err, results) => {
+      connect.release();
+
+      if (err) {
+        console.error("Error saat menambahkan data pegawai:", err);
+        return res
+          .status(500)
+          .json({ message: "Gagal menambahkan data pegawai." });
+      }
+
+      return res.status(201).json({
+        message: "Data pegawai berhasil ditambahkan.",
+        dataId: results.insertId,
+      });
+    });
+  });
+});
 app.post("/tambahDataMajelis", (req, res) => {
   const {
     nama,
@@ -676,7 +675,7 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
       const data = rows.reduce((acc, row) => {
         const { kode_wilayah, kondisi_fisik, total } = row;
         if (!acc[kode_wilayah]) {
-          acc[kode_wilayah] = { "Disabilitas": 0, "Non Disabilitas": 0 };
+          acc[kode_wilayah] = { Disabilitas: 0, "Non Disabilitas": 0 };
         }
         acc[kode_wilayah][kondisi_fisik] = total;
         return acc;
