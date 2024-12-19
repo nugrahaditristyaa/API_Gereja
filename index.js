@@ -722,6 +722,46 @@ app.get("/jemaat/sebaranGrafikGender", (req, res) => {
     });
   });
 });
+
+app.get("/jemaat/sebaranGrafikGolonganDarah", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        golongan_darah,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, golongan_darah
+      ORDER BY kode_wilayah, golongan_darah ASC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = rows.reduce((acc, row) => {
+        const { kode_wilayah, golongan_darah, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { "A": 0, "B": 0, "O": 0, "AB": 0 };
+        }
+        acc[kode_wilayah][golongan_darah] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/pelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
