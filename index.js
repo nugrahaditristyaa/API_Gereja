@@ -738,7 +738,7 @@ app.get("/jemaat/sebaranGrafikGolonganDarah", (req, res) => {
         COUNT(*) AS total 
       FROM jemaat 
       GROUP BY kode_wilayah, golongan_darah
-      ORDER BY kode_wilayah, golongan_darah ASC
+      ORDER BY kode_wilayah, golongan_darah DESC
     `;
 
     connection.query(query, (err, rows) => {
