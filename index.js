@@ -699,7 +699,7 @@ app.get("/jemaat/sebaranGrafikGender", (req, res) => {
         COUNT(*) AS total 
       FROM jemaat 
       GROUP BY kode_wilayah, jenis_kelamin
-      ORDER BY kode_wilayah, jenis_kelamin DESC
+      ORDER BY kode_wilayah, jenis_kelamin ASC
     `;
 
     connection.query(query, (err, rows) => {
