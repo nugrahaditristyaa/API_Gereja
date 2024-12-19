@@ -685,6 +685,44 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
     });
   });
 });
+app.get("/jemaat/sebaranGrafikGender", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        jenis_kelamin,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, jenis_kelamin
+      ORDER BY kode_wilayah, jenis_kelamin DESC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = rows.reduce((acc, row) => {
+        const { kode_wilayah, jenis_kelamin, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { "Laki-laki": 0, "Perempuan": 0 };
+        }
+        acc[kode_wilayah][jenis_kelamin] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
+    });
+  });
+});
 app.get("/pelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
