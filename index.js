@@ -601,50 +601,7 @@ app.get("/jemaat/sebaranPelayanan", (req, res) => {
     });
   });
 });
-app.get("/jemaat/sebaranDisabilitas", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      res.status(500).send("Koneksi database gagal.");
-      return;
-    }
 
-    const query = `
-      SELECT 
-        kondisi_fisik,
-        COUNT(*) as jumlah
-      FROM detail_jemaat
-      WHERE kondisi_fisik IN ('Non Disabilitas', 'Disabilitas')
-      GROUP BY kondisi_fisik 
-    `;
-
-    connection.query(query, (err, rows) => {
-      connection.release();
-
-      if (err) {
-        console.error("Error saat mengambil data jemaat:", err);
-        res.status(500).send("Gagal mengambil data jemaat.");
-        return;
-      }
-
-      const total = rows.reduce(
-        (acc, row) => {
-          if (row.kondisi_fisik === "Non Disabilitas") {
-            acc.totalNonDisabilitas += row.jumlah;
-          } else if (row.kondisi_fisik === "Disabilitas") {
-            acc.totalDisabilitas += row.jumlah;
-          }
-          return acc;
-        },
-        { totalNonDisabilitas: 0, totalDisabilitas: 0 }
-      );
-      res.status(200).json({
-        data: rows,
-        totals: total,
-      });
-    });
-  });
-});
 app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
