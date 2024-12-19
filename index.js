@@ -729,7 +729,7 @@ app.get("/jemaat/tabelwilayah", (req, res) => {
 
     const query = `
       SELECT 
-        kode_wilayah,
+        kode_wilayah
       FROM jemaat 
       JOIN wilayah ON jemaat.kode_wilayah = wilayah.kode_wilayah
     `;
