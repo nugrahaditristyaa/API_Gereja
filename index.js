@@ -731,7 +731,7 @@ app.get("/jemaat/tabelwilayah", (req, res) => {
       SELECT 
         kode_wilayah
       FROM jemaat 
-      JOIN wilayah ON jemaat.kode_wilayah = wilayah.kode_wilayah
+      JOIN kode_wilayah ON jemaat.kode_wilayah = kode_wilayah.kode_wilayah
     `;
 
     connection.query(query, (err, rows) => {
