@@ -685,8 +685,8 @@ app.get("/jemaat/sebaranGrafikPelayanan", (req, res) => {
         j.kode_wilayah,
         d.pelayanan_diikuti,
         COUNT(*) AS total 
-      FROM jemaat j 
-      JOIN detail_jemaat d ON j.kode_wilayah = d.kode_wilayah
+      FROM detail_jemaat d 
+      JOIN jemaat j ON d.kode_wilayah = j.kode_wilayah
       GROUP BY kode_wilayah, pelayanan_diikuti
       ORDER BY kode_wilayah, pelayanan_diikuti ASC
     `;
