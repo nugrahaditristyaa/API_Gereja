@@ -632,7 +632,7 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
       const data = rows.reduce((acc, row) => {
         const { kode_wilayah, kondisi_fisik, total } = row;
         if (!acc[kode_wilayah]) {
-          acc[kode_wilayah] = { Disabilitas: 0, "Non Disabilitas": 0 };
+          acc[kode_wilayah] = { "Disabilitas": 0, "Non Disabilitas": 0 };
         }
         acc[kode_wilayah][kondisi_fisik] = total;
         return acc;
@@ -641,6 +641,37 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
     });
   });
 });
+app.get("/jemaat/sebaranGrafikPekerjaan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        pekerjaan,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, pekerjaan
+      ORDER BY kode_wilayah, pekerjaan DESC LIMIT 4
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/jemaat/sebaranGrafikGender", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) {
@@ -714,35 +745,6 @@ app.get("/jemaat/sebaranGrafikGolonganDarah", (req, res) => {
         acc[kode_wilayah][golongan_darah] = total;
         return acc;
       }, {});
-      res.status(200).json({ data: rows });
-    });
-  });
-});
-
-app.get("/jemaat/tabelwilayah", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      res.status(500).send("Koneksi database gagal.");
-      return;
-    }
-
-    const query = `
-      SELECT 
-        j.kode_wilayah,
-        k.kode_wilayah
-      FROM jemaat j
-      JOIN kode_wilayah k ON j.kode_wilayah = k.kode_wilayah
-    `;
-
-    connection.query(query, (err, rows) => {
-      connection.release();
-
-      if (err) {
-        console.error("Error saat mengambil data jemaat:", err);
-        res.status(500).send("Gagal mengambil data jemaat.");
-        return;
-      }
       res.status(200).json({ data: rows });
     });
   });
