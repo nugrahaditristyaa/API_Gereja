@@ -656,7 +656,39 @@ app.get("/jemaat/sebaranGrafikPekerjaan", (req, res) => {
         COUNT(*) AS total 
       FROM jemaat 
       GROUP BY kode_wilayah, pekerjaan
-      ORDER BY kode_wilayah, pekerjaan DESC
+      ORDER BY kode_wilayah, pekerjaan ASC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranGrafikPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.kode_wilayah,
+        d.pelayanan_diikuti,
+        COUNT(*) AS total 
+      FROM jemaat j 
+      JOIN detail_jemaat d ON j.kode_wilayah = d.kode_wilayah
+      GROUP BY kode_wilayah, pelayanan_diikuti
+      ORDER BY kode_wilayah, pelayanan_diikuti ASC
     `;
 
     connection.query(query, (err, rows) => {
