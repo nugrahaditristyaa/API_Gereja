@@ -656,7 +656,7 @@ app.get("/jemaat/sebaranGrafikPekerjaan", (req, res) => {
         COUNT(*) AS total 
       FROM jemaat 
       GROUP BY kode_wilayah, pekerjaan
-      ORDER BY kode_wilayah, pekerjaan DESC LIMIT 4
+      ORDER BY kode_wilayah, pekerjaan DESC
     `;
 
     connection.query(query, (err, rows) => {
