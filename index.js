@@ -682,13 +682,13 @@ app.get("/jemaat/sebaranGrafikPelayanan", (req, res) => {
 
     const query = `
       SELECT 
-        j.kode_wilayah,
+        j.no_induk_jemaat,
         d.pelayanan_diikuti,
         COUNT(*) AS total 
       FROM detail_jemaat d 
-      JOIN jemaat j ON d.kode_wilayah = j.kode_wilayah
-      GROUP BY kode_wilayah, pelayanan_diikuti
-      ORDER BY kode_wilayah, pelayanan_diikuti ASC
+      JOIN jemaat j ON d.no_induk_jemaat = j.no_induk_jemaat
+      GROUP BY no_induk_jemaat, pelayanan_diikuti
+      ORDER BY no_induk_jemaat, pelayanan_diikuti ASC
     `;
 
     connection.query(query, (err, rows) => {
