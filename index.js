@@ -49,21 +49,30 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
-app.delete("/pegawai_dayu", (req, res) => {
+app.delete("/pegawai_dayu/:id", (req, res) => {
   const { id } = req.params;
-  const query = "DELETE FROM pegawai_dayu  WHERE id = ?";
+  const query = "DELETE FROM pegawai_dayu WHERE id = ?";
 
-  db.query(query, [id], (err, result) => {
+  pool.getConnection((err, connection) => {
     if (err) {
-      console.error("Gagal menghapus data pegawai:", err);
-      return res.status(500).json({ message: "Gagal menghapus data" });
+      console.error("Error getting connection from pool:", err);
+      return res.status(500).json({ message: "Gagal menghubungi database" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Data tidak ditemukan" });
-    }
+    connection.query(query, [id], (err, result) => {
+      connection.release(); // Melepaskan koneksi kembali ke pool
 
-    res.json({ message: "Data pegawai berhasil dihapus" });
+      if (err) {
+        console.error("Gagal menghapus data pegawai:", err);
+        return res.status(500).json({ message: "Gagal menghapus data" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Data tidak ditemukan" });
+      }
+
+      res.json({ message: "Data pegawai berhasil dihapus" });
+    });
   });
 });
 
