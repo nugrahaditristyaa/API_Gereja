@@ -49,6 +49,24 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
+app.delete("/pegawai_dayu", (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM pegawai_dayu  WHERE id = ?";
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("Gagal menghapus data pegawai:", err);
+      return res.status(500).json({ message: "Gagal menghapus data" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Data tidak ditemukan" });
+    }
+
+    res.json({ message: "Data pegawai berhasil dihapus" });
+  });
+});
+
 app.get("/pegawai_dayu", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err;
@@ -676,7 +694,7 @@ app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
       const data = rows.reduce((acc, row) => {
         const { kode_wilayah, kondisi_fisik, total } = row;
         if (!acc[kode_wilayah]) {
-          acc[kode_wilayah] = { "Disabilitas": 0, "Non Disabilitas": 0 };
+          acc[kode_wilayah] = { Disabilitas: 0, "Non Disabilitas": 0 };
         }
         acc[kode_wilayah][kondisi_fisik] = total;
         return acc;
@@ -777,7 +795,7 @@ app.get("/jemaat/sebaranGrafikGender", (req, res) => {
       const data = rows.reduce((acc, row) => {
         const { kode_wilayah, jenis_kelamin, total } = row;
         if (!acc[kode_wilayah]) {
-          acc[kode_wilayah] = { "Laki-laki": 0, "Perempuan": 0 };
+          acc[kode_wilayah] = { "Laki-laki": 0, Perempuan: 0 };
         }
         acc[kode_wilayah][jenis_kelamin] = total;
         return acc;
@@ -816,7 +834,7 @@ app.get("/jemaat/sebaranGrafikGolonganDarah", (req, res) => {
       const data = rows.reduce((acc, row) => {
         const { kode_wilayah, golongan_darah, total } = row;
         if (!acc[kode_wilayah]) {
-          acc[kode_wilayah] = { "A": 0, "B": 0, "O": 0, "AB": 0 };
+          acc[kode_wilayah] = { A: 0, B: 0, O: 0, AB: 0 };
         }
         acc[kode_wilayah][golongan_darah] = total;
         return acc;
