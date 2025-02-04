@@ -2,6 +2,24 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// function setCorsHeaders(req, res, next) {
+//   res.setHeader("Access-Control-Allow-Origin", "*"); // Mengizinkan semua origin
+//   res.setHeader(
+//     "Access-Control-Allow-Methods",
+//     "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+//   ); // Tambahkan OPTIONS
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type"); // "application/json" tidak perlu ditulis
+
+//   // Tangani preflight request dari browser
+//   if (req.method === "OPTIONS") {
+//     return res.status(204).end(); // 204 No Content untuk response OPTIONS
+//   }
+
+//   next();
+// }
+
+// app.use(setCorsHeaders);
+
 // const bodyParser = require("body-parser");
 // const jsonParser = bodyParser.json();
 // const bodyParser = require("body-parser");
@@ -31,93 +49,102 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
+app.get("/pegawai_dayu", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query("SELECT * from pegawai_dayu", (err, rows) => {
+      connection.release();
+      if (!err) {
+        res.status(200).json({ data: rows });
+      } else {
+        res.status(500).json({ error: err });
+      }
+    });
+  });
+});
+
 app.post("/tambahDataJemaat", (req, res) => {
   const {
-    no_induk_jemaat,
-    pelayanan_diikuti,
-    pelayanan_diminati,
-    tgl_baptis_anak,
-    tempat_baptis_anak,
-    tanggal_baptis_dewasa,
-    tempat_baptis_dewasa,
-    tgl_sidhi,
-    tampat_sidhi,
-    tgl_nikah,
-    tempat_nikah,
-    tgl_masuk_gereja,
-    asal_gereja,
-    tgl_keluar_gereja,
-    gereja_tujuan,
-    alasan_keluar,
-    tgl_meninggal,
-    tempat_meninggal,
-    tempat_pemakaman,
-    penghasilan,
-    transportasi,
-    kondisi_fisik,
-    deskripsi_disabilitas,
-    penyakit_sering_diderita,
-    alamat_rumah,
+    no_kk,
+    kode_wilayah,
+    nama,
+    tempat_lahir,
+    tgl_lahir,
+    jenis_kelamin,
+    hubungan_keluarga,
+    status_nikah,
+    golongan_darah,
+    hobby,
+    telepon,
+    email,
+    pekerjaan,
+    bidang,
+    kerja_sampingan,
+    alamat_kantor,
+    pendidikan,
+    jurusan,
+    alamat_sekolah,
+    status_jemaat,
+    keaktifan_jemaat,
+    tgl_tidak_aktif,
+    alasan_tidak_aktif,
   } = req.body;
 
   const query = `
-    INSERT INTO detail_jemaat (
-      no_induk_jemaat,
-      pelayanan_diikuti,
-      pelayanan_diminati,
-      tgl_baptis_anak,
-      tempat_baptis_anak,
-      tanggal_baptis_dewasa,
-      tempat_baptis_dewasa,
-      tgl_sidhi,
-      tampat_sidhi,
-      tgl_nikah,
-      tempat_nikah,
-      tgl_masuk_gereja,
-      asal_gereja,
-      tgl_keluar_gereja,
-      gereja_tujuan,
-      alasan_keluar,
-      tgl_meninggal,
-      tempat_meninggal,
-      tempat_pemakaman,
-      penghasilan,
-      transportasi,
-      kondisi_fisik,
-      deskripsi_disabilitas,
-      penyakit_sering_diderita,
-      alamat_rumah
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO jemaat (
+    no_kk,
+    kode_wilayah,
+    nama,
+    tempat_lahir,
+    tgl_lahir,
+    jenis_kelamin,
+    hubungan_keluarga,
+    status_nikah,
+    golongan_darah,
+    hobby,
+    telepon,
+    email,
+    pekerjaan,
+    bidang,
+    kerja_sampingan,
+    alamat_kantor,
+    pendidikan,
+    jurusan,
+    alamat_sekolah,
+    status_jemaat,
+    keaktifan_jemaat,
+    tgl_tidak_aktif,
+    alasan_tidak_aktif
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
-    no_induk_jemaat,
-    pelayanan_diikuti,
-    pelayanan_diminati,
-    tgl_baptis_anak,
-    tempat_baptis_anak,
-    tanggal_baptis_dewasa,
-    tempat_baptis_dewasa,
-    tgl_sidhi,
-    tampat_sidhi,
-    tgl_nikah,
-    tempat_nikah,
-    tgl_masuk_gereja,
-    asal_gereja,
-    tgl_keluar_gereja,
-    gereja_tujuan,
-    alasan_keluar,
-    tgl_meninggal,
-    tempat_meninggal,
-    tempat_pemakaman,
-    penghasilan,
-    transportasi,
-    kondisi_fisik,
-    deskripsi_disabilitas,
-    penyakit_sering_diderita,
-    alamat_rumah,
+    no_kk,
+    kode_wilayah,
+    nama,
+    tempat_lahir,
+    tgl_lahir,
+    jenis_kelamin,
+    hubungan_keluarga,
+    status_nikah,
+    golongan_darah,
+    hobby,
+    telepon,
+    email,
+    pekerjaan,
+    bidang,
+    kerja_sampingan,
+    alamat_kantor,
+    pendidikan,
+    jurusan,
+    alamat_sekolah,
+    status_jemaat,
+    keaktifan_jemaat,
+    tgl_tidak_aktif,
+    alasan_tidak_aktif,
   ];
 
+  console.log("req body jemaat", values);
   pool.getConnection((err, connect) => {
     if (err) {
       console.error("Error saat koneksi ke database:", err);
@@ -125,12 +152,15 @@ app.post("/tambahDataJemaat", (req, res) => {
       return;
     }
 
-    connect.query(query, values, (err, results) => {
+    connect.query(query, values, (error, results) => {
       connect.release(); // Selalu release koneksi setelah selesai
 
-      if (err) {
-        console.error("Error saat menambahkan data jemaat:", err);
-        res.status(500).send("Gagal menambahkan data jemaat.");
+      if (error) {
+        console.error("Error saat menambahkan data jemaat karena:", error);
+        console.log("Error saat menambahkan data jemaat karena:", error);
+        res.status(500).json({
+          message: `post gagal menambahkan data jemaat,${req.body}`,
+        });
         return;
       } else {
         res.status(201).json({
@@ -299,6 +329,20 @@ app.get("/jemaat/sebaranWilayah", (req, res) => {
         }
       }
     );
+  });
+});
+
+app.get("/majelis", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query("SELECT * from majelis_jemaat", (err, rows) => {
+      connection.release();
+      if (!err) {
+        res.status(200).json({ data: rows });
+      } else {
+        res.status(500).json({ error: err });
+      }
+    });
   });
 });
 
