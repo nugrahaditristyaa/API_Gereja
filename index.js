@@ -49,6 +49,33 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
+app.delete("/deleteMajelis/:id_majelis", (req, res) => {
+  const { id_majelis } = req.params;
+  const query = "DELETE FROM majelis_jemaat WHERE id_majelis = ?";
+
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error getting connection from pool:", err);
+      return res.status(500).json({ message: "Gagal menghubungi database" });
+    }
+
+    connection.query(query, [id_majelis], (err, result) => {
+      connection.release(); // Melepaskan koneksi kembali ke pool
+
+      if (err) {
+        console.error("Gagal menghapus data majelis", err);
+        return res.status(500).json({ message: "Gagal menghapus data" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Data tidak ditemukan" });
+      }
+
+      res.json({ message: "Data majelis berhasil dihapus" });
+    });
+  });
+});
+
 app.delete("/pegawai_dayu/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM pegawai_dayu WHERE id = ?";
@@ -72,6 +99,33 @@ app.delete("/pegawai_dayu/:id", (req, res) => {
       }
 
       res.json({ message: "Data pegawai berhasil dihapus" });
+    });
+  });
+});
+
+app.delete("/jemaat/:no_urut", (req, res) => {
+  const { no_urut } = req.params;
+  const query = "DELETE FROM jemaat WHERE no_urut = ?";
+
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error getting connection from pool:", err);
+      return res.status(500).json({ message: "Gagal menghubungi database" });
+    }
+
+    connection.query(query, [no_urut], (err, result) => {
+      connection.release(); // Melepaskan koneksi kembali ke pool
+
+      if (err) {
+        console.error("Gagal menghapus data jemaat:", err);
+        return res.status(500).json({ message: "Gagal menghapus data" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Data tidak ditemukan" });
+      }
+
+      res.json({ message: "Data jemaat berhasil dihapus" });
     });
   });
 });
