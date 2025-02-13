@@ -320,7 +320,7 @@ app.delete("/deletePegawai/:id", (req, res) => {
       connection.release(); // Melepaskan koneksi kembali ke pool
 
       if (err) {
-        console.error("Gagal menghapus data pegawai:", err);
+        console.error("Gagal menghapus data pegawai", err);
         return res.status(500).json({ message: "Gagal menghapus data" });
       }
 
@@ -332,6 +332,33 @@ app.delete("/deletePegawai/:id", (req, res) => {
     });
   });
 });
+
+// app.delete("/deletePegawai/:id", (req, res) => {
+//   const { id } = req.params;
+//   const query = "DELETE FROM pegawai_dayu WHERE id = ?";
+
+//   pool.getConnection((err, connection) => {
+//     if (err) {
+//       console.error("Error getting connection from pool:", err);
+//       return res.status(500).json({ message: "Gagal menghubungi database" });
+//     }
+
+//     connection.query(query, [id], (err, result) => {
+//       connection.release(); // Melepaskan koneksi kembali ke pool
+
+//       if (err) {
+//         console.error("Gagal menghapus data pegawai:", err);
+//         return res.status(500).json({ message: "Gagal menghapus data" });
+//       }
+
+//       if (result.affectedRows === 0) {
+//         return res.status(404).json({ message: "Data tidak ditemukan" });
+//       }
+
+//       res.json({ message: "Data pegawai berhasil dihapus" });
+//     });
+//   });
+// });
 
 app.delete("/jemaat/:no_urut", (req, res) => {
   const { no_urut } = req.params;
@@ -727,7 +754,7 @@ app.get("/jemaat/:no_urut", (req, res) => {
       return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
     }
 
-    res.status(200).json({ message: "Data ditemukan::", data: results[0] });
+    res.status(200).json({ message: "Data ditemukan", data: results[0] });
   });
 });
 
@@ -748,7 +775,7 @@ app.get("/pegawai_dayu/:id", (req, res) => {
       return res.status(404).json({ message: "Data pegawai tidak ditemukan." });
     }
 
-    res.status(200).json({ message: "Data ditemukan::", data: results[0] });
+    res.status(200).json({ message: "Data ditemukan", data: results[0] });
   });
 });
 
