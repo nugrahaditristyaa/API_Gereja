@@ -507,10 +507,13 @@ app.post("/tambahDataPegawai", (req, res) => {
   } = req.body;
 
   // Validasi data jika diperlukan
-  if (!nama || !posisi || !tanggal_masuk || !status_aktif || !kode_user) {
+  if (!nama || !posisi || !tanggal_masuk || !kode_user) {
     return res
       .status(400)
-      .json({ message: "Semua field wajib diisi, kecuali tanggal_keluar!" });
+      .json({
+        message:
+          "Semua field wajib diisi, kecuali tanggal_keluar dan status aktif",
+      });
   }
 
   // Koneksi ke database dan eksekusi query
@@ -531,7 +534,7 @@ app.post("/tambahDataPegawai", (req, res) => {
       posisi,
       tanggal_masuk,
       tanggal_keluar || null,
-      status_aktif,
+      status_aktif || null,
       kode_user,
     ];
 
