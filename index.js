@@ -566,18 +566,17 @@ app.post("/tambahDataMajelis", (req, res) => {
   } = req.body;
 
   console.log("debug req json", req.body);
-  // Validasi input
+  // Validasi input (tanpa tgl_penahbisan & status_aktif yang opsional)
   if (
     !nama ||
     !kode_wilayah ||
     !jabatan ||
     !periode_jabatan ||
     !tanggal_SK ||
-    !status_aktif ||
     !kode_user
   ) {
     return res.status(400).json({
-      message: "Semua field wajib diisi!",
+      message: "Field wajib tidak boleh kosong!",
     });
   }
 
@@ -601,8 +600,8 @@ app.post("/tambahDataMajelis", (req, res) => {
       jabatan,
       periode_jabatan,
       tanggal_SK,
-      tgl_penahbisan,
-      status_aktif,
+      null, // Set null jika tidak diisi
+      null, // Set null jika tidak diisi
       kode_user,
     ];
 
@@ -616,7 +615,7 @@ app.post("/tambahDataMajelis", (req, res) => {
       } else {
         res.status(201).json({
           message: "Data majelis berhasil ditambahkan.",
-          dataId: values,
+          dataId: results.insertId,
         });
       }
     });
