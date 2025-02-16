@@ -231,7 +231,7 @@ app.put("/updatePegawai/:id", (req, res) => {
     req.body;
 
   // Validasi input (pastikan tidak ada field kosong)
-  if (!nama || !posisi || !tanggal_masuk || !tanggal_keluar || !status_aktif) {
+  if (!nama || !posisi || !tanggal_masuk) {
     return res.status(400).json({ message: "Semua field harus diisi!" });
   }
 
@@ -506,17 +506,15 @@ app.post("/tambahDataPegawai", (req, res) => {
     kode_user,
   } = req.body;
 
-  // Validasi data jika diperlukan
+  // Validasi field wajib
   if (!nama || !posisi || !tanggal_masuk || !kode_user) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Semua field wajib diisi, kecuali tanggal_keluar dan status aktif",
-      });
+    return res.status(400).json({
+      message:
+        "Semua field wajib diisi, kecuali tanggal_keluar dan status_aktif",
+    });
   }
 
-  // Koneksi ke database dan eksekusi query
+  // Koneksi ke database
   pool.getConnection((err, connect) => {
     if (err) {
       console.error("Error saat koneksi ke database:", err);
@@ -533,8 +531,8 @@ app.post("/tambahDataPegawai", (req, res) => {
       nama,
       posisi,
       tanggal_masuk,
-      tanggal_keluar || null,
-      status_aktif || null,
+      tanggal_keluar && tanggal_keluar !== "" ? tanggal_keluar : null,
+      status_aktif && status_aktif !== "" ? status_aktif : null,
       kode_user,
     ];
 
@@ -543,9 +541,10 @@ app.post("/tambahDataPegawai", (req, res) => {
 
       if (err) {
         console.error("Error saat menambahkan data pegawai:", err);
-        return res
-          .status(500)
-          .json({ message: "Gagal menambahkan data pegawai." });
+        return res.status(500).json({
+          message: "Gagal menambahkan data pegawai.",
+          error: err.message,
+        });
       }
 
       return res.status(201).json({
