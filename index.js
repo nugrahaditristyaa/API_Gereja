@@ -234,6 +234,55 @@ app.put("/updateJemaat/:no_urut", (req, res) => {
   });
 });
 
+app.put("/updateMajelis/:id_majelis", (req, res) => {
+  const { id_majelis } = req.params;
+  const {
+    nama,
+    kode_wilayah,
+    jabatan,
+    periode_jabatan,
+    tanggal_SK,
+    tgl_penahbisan,
+    status_aktif,
+  } = req.body;
+
+  if (!nama || !jabatan || !periode_jabatan || !kode_wilayah) {
+    return res.status(400).json({ message: "Semua field harus diisi!" });
+  }
+
+  const query = `
+    UPDATE majelis_jemaat 
+    SET nama = ?, kode_wilayah = ?, jabatan = ?, periode_jabatan = ?, 
+        tanggal_SK = ?, tgl_penahbisan = ?, status_aktif = ?
+    WHERE id_majelis = ?
+  `;
+
+  const values = [
+    nama,
+    kode_wilayah,
+    jabatan,
+    periode_jabatan,
+    tanggal_SK,
+    tgl_penahbisan,
+    status_aktif,
+    id_majelis,
+  ];
+
+  pool.query(query, values, (error, result) => {
+    if (error) {
+      console.error("Error updating majelis:", error);
+      return res
+        .status(500)
+        .json({ message: "Terjadi kesalahan pada server." });
+    }
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Majelis berhasil diperbarui!" });
+    } else {
+      res.status(404).json({ message: "Majelis tidak ditemukan." });
+    }
+  });
+});
+
 app.put("/updatePegawai/:id", (req, res) => {
   const { id } = req.params;
   const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
@@ -459,7 +508,7 @@ app.post("/tambahDataJemaat", (req, res) => {
   `;
 
   const values = [
-    null,
+    no_kk || null,
     kode_wilayah,
     nama,
     tempat_lahir,
@@ -467,21 +516,21 @@ app.post("/tambahDataJemaat", (req, res) => {
     jenis_kelamin,
     hubungan_keluarga,
     status_nikah,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
+    golongan_darah || null,
+    hobby || null,
+    telepon || null,
+    email || null,
+    pekerjaan || null,
+    bidang || null,
+    kerja_sampingan || null,
+    alamat_kantor || null,
+    pendidikan || null,
+    jurusan || null,
+    alamat_sekolah || null,
     status_jemaat,
     keaktifan_jemaat,
-    null,
-    null,
+    tgl_tidak_aktif || null,
+    alasan_tidak_aktif || null,
   ];
 
   console.log("req body jemaat", values);
@@ -489,11 +538,11 @@ app.post("/tambahDataJemaat", (req, res) => {
   pool.getConnection((err, connect) => {
     if (err) {
       console.error("Error saat koneksi ke database:", err);
-      return res.status(500).send("Koneksi database gagal.");
+      return res.status(500).json({ message: "Koneksi database gagal." });
     }
 
     connect.query(query, values, (error, results) => {
-      connect.release(); // Pastikan koneksi dilepaskan setelah selesai
+      connect.release(); // Lepaskan koneksi setelah selesai
 
       if (error) {
         console.error("Error saat menambahkan data jemaat:", error);
