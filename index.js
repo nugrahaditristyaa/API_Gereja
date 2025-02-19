@@ -49,52 +49,61 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
-app.put("/updateMajelis/:id_majelis", (req, res) => {
-  const { id_majelis } = req.params;
-  const {
-    nama,
-    kode_wilayah,
-    jabatan,
-    periode_jabatan,
-    tanggal_SK,
-    tgl_penahbisan,
-    status_aktif,
-  } = req.body;
+app.put("/updatePegawai/:id", (req, res) => {
+  const { id } = req.params;
+  const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
+    req.body;
 
-  if (!nama || !jabatan || !periode_jabatan || !kode_wilayah) {
-    return res.status(400).json({ message: "Semua field harus diisi!" });
+  // Validasi input wajib
+  if (!nama || !posisi || !tanggal_masuk) {
+    return res
+      .status(400)
+      .json({ message: "Nama, Posisi, dan Tanggal Masuk wajib diisi!" });
   }
 
+  // Konversi ID menjadi integer untuk keamanan
+  const pegawaiId = parseInt(id, 10);
+  if (isNaN(pegawaiId)) {
+    return res.status(400).json({ message: "ID pegawai tidak valid!" });
+  }
+
+  // Buat query SQL agar hanya field yang dikirim yang diperbarui
   const query = `
-    UPDATE majelis_jemaat 
-    SET nama = ?, kode_wilayah = ?, jabatan = ?, periode_jabatan = ?, 
-        tanggal_SK = ?, tgl_penahbisan = ?, status_aktif = ?
-    WHERE id_majelis = ?
+    UPDATE pegawai_dayu 
+    SET 
+      nama = ?, 
+      posisi = ?, 
+      tanggal_masuk = ?, 
+      tanggal_keluar = COALESCE(?, tanggal_keluar), 
+      status_aktif = COALESCE(?, status_aktif)
+    WHERE id = ?
   `;
 
+  // Pastikan jika `tanggal_keluar` tidak dikirim, tetap NULL
   const values = [
     nama,
-    kode_wilayah,
-    jabatan,
-    periode_jabatan,
-    tanggal_SK,
-    tgl_penahbisan,
-    status_aktif,
-    id_majelis,
+    posisi,
+    tanggal_masuk,
+    tanggal_keluar || null, // Jika kosong, set NULL
+    status_aktif || null, // Jika kosong, set NULL
+    pegawaiId,
   ];
+
+  console.log("Query:", query);
+  console.log("Values:", values);
 
   pool.query(query, values, (error, result) => {
     if (error) {
-      console.error("Error updating majelis:", error);
+      console.error("Error updating pegawai:", error.sqlMessage);
       return res
         .status(500)
         .json({ message: "Terjadi kesalahan pada server." });
     }
 
     if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Majelis berhasil diperbarui!" });
+      res.status(200).json({ message: "Pegawai berhasil diperbarui!" });
     } else {
-      res.status(404).json({ message: "Majelis tidak ditemukan." });
+      res.status(404).json({ message: "Pegawai tidak ditemukan." });
     }
   });
 });
@@ -414,36 +423,43 @@ app.post("/tambahDataJemaat", (req, res) => {
     alasan_tidak_aktif,
   } = req.body;
 
+  // Validasi input wajib
+  if (
+    !nama ||
+    !kode_wilayah ||
+    !tempat_lahir ||
+    !tgl_lahir ||
+    !jenis_kelamin ||
+    !hubungan_keluarga ||
+    !status_nikah ||
+    !status_jemaat ||
+    !keaktifan_jemaat
+  ) {
+    return res.status(400).json({
+      message: "Field wajib tidak boleh kosong!",
+    });
+  }
+
+  // Validasi email format sederhana
+  if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+    return res.status(400).json({ message: "Format email tidak valid!" });
+  }
+
+  // Validasi format nomor telepon sederhana (hanya angka dan + di awal)
+  if (telepon && !/^\+?\d+$/.test(telepon)) {
+    return res.status(400).json({ message: "Format telepon tidak valid!" });
+  }
+
   const query = `
     INSERT INTO jemaat (
-    no_kk,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif
+      no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
+      golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
+      pendidikan, jurusan, alamat_sekolah, status_jemaat, keaktifan_jemaat, tgl_tidak_aktif, alasan_tidak_aktif
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
-    no_kk,
+    null,
     kode_wilayah,
     nama,
     tempat_lahir,
@@ -451,47 +467,45 @@ app.post("/tambahDataJemaat", (req, res) => {
     jenis_kelamin,
     hubungan_keluarga,
     status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
     status_jemaat,
     keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif,
+    null,
+    null,
   ];
 
   console.log("req body jemaat", values);
+
   pool.getConnection((err, connect) => {
     if (err) {
       console.error("Error saat koneksi ke database:", err);
-      res.status(500).send("Koneksi database gagal.");
-      return;
+      return res.status(500).send("Koneksi database gagal.");
     }
 
     connect.query(query, values, (error, results) => {
-      connect.release(); // Selalu release koneksi setelah selesai
+      connect.release(); // Pastikan koneksi dilepaskan setelah selesai
 
       if (error) {
-        console.error("Error saat menambahkan data jemaat karena:", error);
-        console.log("Error saat menambahkan data jemaat karena:", error);
-        res.status(500).json({
-          message: `post gagal menambahkan data jemaat,${req.body}`,
-        });
-        return;
-      } else {
-        res.status(201).json({
-          message: "Data jemaat berhasil ditambahkan.",
-          dataId: results.insertId,
-        });
+        console.error("Error saat menambahkan data jemaat:", error);
+        return res
+          .status(500)
+          .json({ message: "Gagal menambahkan data jemaat." });
       }
+
+      res.status(201).json({
+        message: "Data jemaat berhasil ditambahkan.",
+        dataId: results.insertId,
+      });
     });
   });
 });
