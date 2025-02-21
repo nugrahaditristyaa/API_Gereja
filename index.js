@@ -136,30 +136,21 @@ app.put("/updateJemaat/:no_urut", (req, res) => {
     alasan_tidak_aktif,
   } = req.body;
 
+  //validasi form yang wajib diisi
   if (
-    !no_kk ||
-    !kode_wilayah ||
     !nama ||
     !tempat_lahir ||
     !tgl_lahir ||
     !jenis_kelamin ||
     !hubungan_keluarga ||
     !status_nikah ||
-    !golongan_darah ||
-    !hobby ||
-    !telepon ||
-    !email ||
-    !pekerjaan ||
-    !bidang ||
-    !kerja_sampingan ||
-    !alamat_kantor ||
-    !pendidikan ||
-    !jurusan ||
-    !alamat_sekolah ||
     !status_jemaat ||
+    !kode_wilayah ||
     !keaktifan_jemaat
   ) {
-    return res.status(400).json({ message: "Data wajib tidak boleh kosong!" });
+    return res
+      .status(400)
+      .json({ message: "Data wajib tidak boleh kosong! ya" });
   }
 
   const query = `
@@ -746,6 +737,74 @@ app.get("/majelis", (req, res) => {
         res.status(500).json({ error: err });
       }
     });
+  });
+});
+
+app.get("/jemaatWilayahSatu", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT * from jemaat WHERE kode_wilayah=1;",
+      (err, rows) => {
+        connection.release();
+        if (!err) {
+          res.status(200).json({ data: rows });
+        } else {
+          res.status(500).json({ error: err });
+        }
+      }
+    );
+  });
+});
+
+app.get("/jemaatWilayahTiga", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT * from jemaat WHERE kode_wilayah=3;",
+      (err, rows) => {
+        connection.release();
+        if (!err) {
+          res.status(200).json({ data: rows });
+        } else {
+          res.status(500).json({ error: err });
+        }
+      }
+    );
+  });
+});
+
+app.get("/jemaatWilayahEmpat", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT * from jemaat WHERE kode_wilayah=4;",
+      (err, rows) => {
+        connection.release();
+        if (!err) {
+          res.status(200).json({ data: rows });
+        } else {
+          res.status(500).json({ error: err });
+        }
+      }
+    );
+  });
+});
+
+app.get("/jemaatWilayahLima", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) throw err;
+    connection.query(
+      "SELECT * from jemaat WHERE kode_wilayah=5;",
+      (err, rows) => {
+        connection.release();
+        if (!err) {
+          res.status(200).json({ data: rows });
+        } else {
+          res.status(500).json({ error: err });
+        }
+      }
+    );
   });
 });
 
