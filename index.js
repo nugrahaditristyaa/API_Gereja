@@ -49,338 +49,311 @@ app.get("/jemaat", (req, res) => {
   });
 });
 
-app.put("/updatePegawai/:id", (req, res) => {
-  const { id } = req.params;
-  const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
-    req.body;
+// app.put("/updatePegawai/:id", (req, res) => {
+//   const { id } = req.params;
+//   const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
+//     req.body;
 
-  // Validasi input wajib
-  if (!nama || !posisi || !tanggal_masuk) {
-    return res
-      .status(400)
-      .json({ message: "Nama, Posisi, dan Tanggal Masuk wajib diisi!" });
-  }
+//   // Validasi input wajib
+//   if (!nama || !posisi || !tanggal_masuk) {
+//     return res
+//       .status(400)
+//       .json({ message: "Nama, Posisi, dan Tanggal Masuk wajib diisi!" });
+//   }
 
-  // Konversi ID menjadi integer untuk keamanan
-  const pegawaiId = parseInt(id, 10);
-  if (isNaN(pegawaiId)) {
-    return res.status(400).json({ message: "ID pegawai tidak valid!" });
-  }
+//   // Konversi ID menjadi integer untuk keamanan
+//   const pegawaiId = parseInt(id, 10);
+//   if (isNaN(pegawaiId)) {
+//     return res.status(400).json({ message: "ID pegawai tidak valid!" });
+//   }
 
-  // Buat query SQL agar hanya field yang dikirim yang diperbarui
-  const query = `
-    UPDATE pegawai_dayu 
-    SET 
-      nama = ?, 
-      posisi = ?, 
-      tanggal_masuk = ?, 
-      tanggal_keluar = COALESCE(?, tanggal_keluar), 
-      status_aktif = COALESCE(?, status_aktif)
-    WHERE id = ?
-  `;
+//   // Buat query SQL agar hanya field yang dikirim yang diperbarui
+//   const query = `
+//     UPDATE pegawai_dayu 
+//     SET 
+//       nama = ?, 
+//       posisi = ?, 
+//       tanggal_masuk = ?, 
+//       tanggal_keluar = COALESCE(?, tanggal_keluar), 
+//       status_aktif = COALESCE(?, status_aktif)
+//     WHERE id = ?
+//   `;
 
-  // Pastikan jika `tanggal_keluar` tidak dikirim, tetap NULL
-  const values = [
-    nama,
-    posisi,
-    tanggal_masuk,
-    tanggal_keluar || null, // Jika kosong, set NULL
-    status_aktif || null, // Jika kosong, set NULL
-    pegawaiId,
-  ];
+//   // Pastikan jika `tanggal_keluar` tidak dikirim, tetap NULL
+//   const values = [
+//     nama,
+//     posisi,
+//     tanggal_masuk,
+//     tanggal_keluar || null, // Jika kosong, set NULL
+//     status_aktif || null, // Jika kosong, set NULL
+//     pegawaiId,
+//   ];
 
-  console.log("Query:", query);
-  console.log("Values:", values);
+//   console.log("Query:", query);
+//   console.log("Values:", values);
 
-  pool.query(query, values, (error, result) => {
-    if (error) {
-      console.error("Error updating pegawai:", error.sqlMessage);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+//   pool.query(query, values, (error, result) => {
+//     if (error) {
+//       console.error("Error updating pegawai:", error.sqlMessage);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Pegawai berhasil diperbarui!" });
-    } else {
-      res.status(404).json({ message: "Pegawai tidak ditemukan." });
-    }
-  });
-});
+//     if (result.affectedRows > 0) {
+//       res.status(200).json({ message: "Pegawai berhasil diperbarui!" });
+//     } else {
+//       res.status(404).json({ message: "Pegawai tidak ditemukan." });
+//     }
+//   });
+// });
 
-app.put("/updateJemaat/:no_urut", (req, res) => {
-  const { no_urut } = req.params;
-  const {
-    no_kk,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif,
-  } = req.body;
+// app.put("/updateJemaat/:no_urut", (req, res) => {
+//   const { no_urut } = req.params;
+//   const {
+//     no_kk,
+//     kode_wilayah,
+//     nama,
+//     tempat_lahir,
+//     tgl_lahir,
+//     jenis_kelamin,
+//     hubungan_keluarga,
+//     status_nikah,
+//     golongan_darah,
+//     hobby,
+//     telepon,
+//     email,
+//     pekerjaan,
+//     bidang,
+//     kerja_sampingan,
+//     alamat_kantor,
+//     pendidikan,
+//     jurusan,
+//     alamat_sekolah,
+//     status_jemaat,
+//     keaktifan_jemaat,
+//     tgl_tidak_aktif,
+//     alasan_tidak_aktif,
+//   } = req.body;
 
-  //validasi form yang wajib diisi
-  if (
-    !nama ||
-    !tempat_lahir ||
-    !tgl_lahir ||
-    !jenis_kelamin ||
-    !hubungan_keluarga ||
-    !status_nikah ||
-    !status_jemaat ||
-    !kode_wilayah ||
-    !keaktifan_jemaat
-  ) {
-    return res
-      .status(400)
-      .json({ message: "Data wajib tidak boleh kosong! ya" });
-  }
+//   //validasi form yang wajib diisi
+//   if (
+//     !nama ||
+//     !tempat_lahir ||
+//     !tgl_lahir ||
+//     !jenis_kelamin ||
+//     !hubungan_keluarga ||
+//     !status_nikah ||
+//     !status_jemaat ||
+//     !kode_wilayah ||
+//     !keaktifan_jemaat
+//   ) {
+//     return res
+//       .status(400)
+//       .json({ message: "Data wajib tidak boleh kosong! ya" });
+//   }
 
-  const query = `
-  UPDATE jemaat 
-  SET 
-    no_kk = ?, 
-    kode_wilayah = ?, 
-    nama = ?, 
-    tempat_lahir = ?, 
-    tgl_lahir = ?, 
-    jenis_kelamin = ?, 
-    hubungan_keluarga = ?, 
-    status_nikah = ?, 
-    golongan_darah = ?, 
-    hobby = ?, 
-    telepon = ?, 
-    email = ?, 
-    pekerjaan = ?, 
-    bidang = ?, 
-    kerja_sampingan = ?, 
-    alamat_kantor = ?, 
-    pendidikan = ?, 
-    jurusan = ?, 
-    alamat_sekolah = ?, 
-    status_jemaat = ?, 
-    keaktifan_jemaat = ?, 
-    tgl_tidak_aktif = ?, 
-    alasan_tidak_aktif = ?
-  WHERE no_urut = ?;
-`;
+//   const query = `
+//   UPDATE jemaat 
+//   SET 
+//     no_kk = ?, 
+//     kode_wilayah = ?, 
+//     nama = ?, 
+//     tempat_lahir = ?, 
+//     tgl_lahir = ?, 
+//     jenis_kelamin = ?, 
+//     hubungan_keluarga = ?, 
+//     status_nikah = ?, 
+//     golongan_darah = ?, 
+//     hobby = ?, 
+//     telepon = ?, 
+//     email = ?, 
+//     pekerjaan = ?, 
+//     bidang = ?, 
+//     kerja_sampingan = ?, 
+//     alamat_kantor = ?, 
+//     pendidikan = ?, 
+//     jurusan = ?, 
+//     alamat_sekolah = ?, 
+//     status_jemaat = ?, 
+//     keaktifan_jemaat = ?, 
+//     tgl_tidak_aktif = ?, 
+//     alasan_tidak_aktif = ?
+//   WHERE no_urut = ?;
+// `;
 
-  const values = [
-    no_kk,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif,
-    no_urut,
-  ];
+//   const values = [
+//     no_kk,
+//     kode_wilayah,
+//     nama,
+//     tempat_lahir,
+//     tgl_lahir,
+//     jenis_kelamin,
+//     hubungan_keluarga,
+//     status_nikah,
+//     golongan_darah,
+//     hobby,
+//     telepon,
+//     email,
+//     pekerjaan,
+//     bidang,
+//     kerja_sampingan,
+//     alamat_kantor,
+//     pendidikan,
+//     jurusan,
+//     alamat_sekolah,
+//     status_jemaat,
+//     keaktifan_jemaat,
+//     tgl_tidak_aktif,
+//     alasan_tidak_aktif,
+//     no_urut,
+//   ];
 
-  pool.query(query, values, (error, result) => {
-    if (error) {
-      console.error("Error updating jemaat:", error);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+//   pool.query(query, values, (error, result) => {
+//     if (error) {
+//       console.error("Error updating jemaat:", error);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Jemaat berhasil diperbarui!" });
-    } else {
-      res.status(404).json({ message: "Jemaat tidak ditemukan." });
-    }
-  });
-});
+//     if (result.affectedRows > 0) {
+//       res.status(200).json({ message: "Jemaat berhasil diperbarui!" });
+//     } else {
+//       res.status(404).json({ message: "Jemaat tidak ditemukan." });
+//     }
+//   });
+// });
 
-app.put("/updateMajelis/:id_majelis", (req, res) => {
-  const { id_majelis } = req.params;
-  const {
-    nama,
-    kode_wilayah,
-    jabatan,
-    periode_jabatan,
-    tanggal_SK,
-    tgl_penahbisan,
-    status_aktif,
-  } = req.body;
+// app.put("/updateMajelis/:id_majelis", (req, res) => {
+//   const { id_majelis } = req.params;
+//   const {
+//     nama,
+//     kode_wilayah,
+//     jabatan,
+//     periode_jabatan,
+//     tanggal_SK,
+//     tgl_penahbisan,
+//     status_aktif,
+//   } = req.body;
 
-  if (!nama || !jabatan || !periode_jabatan || !kode_wilayah) {
-    return res.status(400).json({ message: "Semua field harus diisi!" });
-  }
+//   if (!nama || !jabatan || !periode_jabatan || !kode_wilayah) {
+//     return res.status(400).json({ message: "Semua field harus diisi!" });
+//   }
 
-  const query = `
-    UPDATE majelis_jemaat 
-    SET nama = ?, kode_wilayah = ?, jabatan = ?, periode_jabatan = ?, 
-        tanggal_SK = ?, tgl_penahbisan = ?, status_aktif = ?
-    WHERE id_majelis = ?
-  `;
+//   const query = `
+//     UPDATE majelis_jemaat 
+//     SET nama = ?, kode_wilayah = ?, jabatan = ?, periode_jabatan = ?, 
+//         tanggal_SK = ?, tgl_penahbisan = ?, status_aktif = ?
+//     WHERE id_majelis = ?
+//   `;
 
-  const values = [
-    nama,
-    kode_wilayah,
-    jabatan,
-    periode_jabatan,
-    tanggal_SK,
-    tgl_penahbisan,
-    status_aktif,
-    id_majelis,
-  ];
+//   const values = [
+//     nama,
+//     kode_wilayah,
+//     jabatan,
+//     periode_jabatan,
+//     tanggal_SK,
+//     tgl_penahbisan,
+//     status_aktif,
+//     id_majelis,
+//   ];
 
-  pool.query(query, values, (error, result) => {
-    if (error) {
-      console.error("Error updating majelis:", error);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Majelis berhasil diperbarui!" });
-    } else {
-      res.status(404).json({ message: "Majelis tidak ditemukan." });
-    }
-  });
-});
+//   pool.query(query, values, (error, result) => {
+//     if (error) {
+//       console.error("Error updating majelis:", error);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
+//     if (result.affectedRows > 0) {
+//       res.status(200).json({ message: "Majelis berhasil diperbarui!" });
+//     } else {
+//       res.status(404).json({ message: "Majelis tidak ditemukan." });
+//     }
+//   });
+// });
 
-app.put("/updatePegawai/:id", (req, res) => {
-  const { id } = req.params;
-  const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
-    req.body;
+// app.put("/updatePegawai/:id", (req, res) => {
+//   const { id } = req.params;
+//   const { nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif } =
+//     req.body;
 
-  // Validasi input (pastikan tidak ada field kosong)
-  if (!nama || !posisi || !tanggal_masuk) {
-    return res.status(400).json({ message: "Semua field harus diisi!" });
-  }
+//   // Validasi input (pastikan tidak ada field kosong)
+//   if (!nama || !posisi || !tanggal_masuk) {
+//     return res.status(400).json({ message: "Semua field harus diisi!" });
+//   }
 
-  // Konversi ID menjadi integer untuk mencegah SQL injection
-  const pegawaiId = parseInt(id, 10);
-  if (isNaN(pegawaiId)) {
-    return res.status(400).json({ message: "ID pegawai tidak valid!" });
-  }
+//   // Konversi ID menjadi integer untuk mencegah SQL injection
+//   const pegawaiId = parseInt(id, 10);
+//   if (isNaN(pegawaiId)) {
+//     return res.status(400).json({ message: "ID pegawai tidak valid!" });
+//   }
 
-  // Pastikan status_aktif adalah string
-  const statusAktifStr = String(status_aktif).trim(); // Pastikan string tidak ada spasi tambahan
+//   // Pastikan status_aktif adalah string
+//   const statusAktifStr = String(status_aktif).trim(); // Pastikan string tidak ada spasi tambahan
 
-  // Perbaiki query SQL
-  const query = `
-    UPDATE pegawai_dayu 
-    SET nama = ?, posisi = ?, tanggal_masuk = ?, tanggal_keluar = ?, status_aktif = ? 
-    WHERE id = ?
-  `;
+//   // Perbaiki query SQL
+//   const query = `
+//     UPDATE pegawai_dayu 
+//     SET nama = ?, posisi = ?, tanggal_masuk = ?, tanggal_keluar = ?, status_aktif = ? 
+//     WHERE id = ?
+//   `;
 
-  const values = [
-    nama,
-    posisi,
-    tanggal_masuk,
-    tanggal_keluar,
-    statusAktifStr,
-    id,
-  ];
+//   const values = [
+//     nama,
+//     posisi,
+//     tanggal_masuk,
+//     tanggal_keluar,
+//     statusAktifStr,
+//     id,
+//   ];
 
-  console.log("Query:", query);
-  console.log("Values:", values);
+//   console.log("Query:", query);
+//   console.log("Values:", values);
 
-  pool.query(query, values, (error, result) => {
-    if (error) {
-      console.error("Error updating pegawai:", error.sqlMessage);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+//   pool.query(query, values, (error, result) => {
+//     if (error) {
+//       console.error("Error updating pegawai:", error.sqlMessage);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Pegawai berhasil diperbarui!" });
-    } else {
-      res.status(404).json({ message: "Pegawai tidak ditemukan." });
-    }
-  });
-});
+//     if (result.affectedRows > 0) {
+//       res.status(200).json({ message: "Pegawai berhasil diperbarui!" });
+//     } else {
+//       res.status(404).json({ message: "Pegawai tidak ditemukan." });
+//     }
+//   });
+// });
 
-app.delete("/deleteMajelis/:id_majelis", (req, res) => {
-  const { id_majelis } = req.params;
-  const query = "DELETE FROM majelis_jemaat WHERE id_majelis = ?";
+// app.delete("/deleteMajelis/:id_majelis", (req, res) => {
+//   const { id_majelis } = req.params;
+//   const query = "DELETE FROM majelis_jemaat WHERE id_majelis = ?";
 
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error getting connection from pool:", err);
-      return res.status(500).json({ message: "Gagal menghubungi database" });
-    }
+//   pool.getConnection((err, connection) => {
+//     if (err) {
+//       console.error("Error getting connection from pool:", err);
+//       return res.status(500).json({ message: "Gagal menghubungi database" });
+//     }
 
-    connection.query(query, [id_majelis], (err, result) => {
-      connection.release(); // Melepaskan koneksi kembali ke pool
+//     connection.query(query, [id_majelis], (err, result) => {
+//       connection.release(); // Melepaskan koneksi kembali ke pool
 
-      if (err) {
-        console.error("Gagal menghapus data majelis", err);
-        return res.status(500).json({ message: "Gagal menghapus data" });
-      }
+//       if (err) {
+//         console.error("Gagal menghapus data majelis", err);
+//         return res.status(500).json({ message: "Gagal menghapus data" });
+//       }
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Data tidak ditemukan" });
-      }
+//       if (result.affectedRows === 0) {
+//         return res.status(404).json({ message: "Data tidak ditemukan" });
+//       }
 
-      res.json({ message: "Data majelis berhasil dihapus" });
-    });
-  });
-});
-
-app.delete("/deletePegawai/:id", (req, res) => {
-  const { id } = req.params;
-  const query = "DELETE FROM pegawai_dayu WHERE id = ?";
-
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error getting connection from pool:", err);
-      return res.status(500).json({ message: "Gagal menghubungi database" });
-    }
-
-    connection.query(query, [id], (err, result) => {
-      connection.release(); // Melepaskan koneksi kembali ke pool
-
-      if (err) {
-        console.error("Gagal menghapus data pegawai", err);
-        return res.status(500).json({ message: "Gagal menghapus data" });
-      }
-
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Data tidak ditemukan" });
-      }
-
-      res.json({ message: "Data pegawai berhasil dihapus" });
-    });
-  });
-});
+//       res.json({ message: "Data majelis berhasil dihapus" });
+//     });
+//   });
+// });
 
 // app.delete("/deletePegawai/:id", (req, res) => {
 //   const { id } = req.params;
@@ -396,7 +369,7 @@ app.delete("/deletePegawai/:id", (req, res) => {
 //       connection.release(); // Melepaskan koneksi kembali ke pool
 
 //       if (err) {
-//         console.error("Gagal menghapus data pegawai:", err);
+//         console.error("Gagal menghapus data pegawai", err);
 //         return res.status(500).json({ message: "Gagal menghapus data" });
 //       }
 
@@ -409,547 +382,574 @@ app.delete("/deletePegawai/:id", (req, res) => {
 //   });
 // });
 
-app.delete("/jemaat/:no_urut", (req, res) => {
-  const { no_urut } = req.params;
-  const query = "DELETE FROM jemaat WHERE no_urut = ?";
+// // app.delete("/deletePegawai/:id", (req, res) => {
+// //   const { id } = req.params;
+// //   const query = "DELETE FROM pegawai_dayu WHERE id = ?";
 
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error getting connection from pool:", err);
-      return res.status(500).json({ message: "Gagal menghubungi database" });
-    }
+// //   pool.getConnection((err, connection) => {
+// //     if (err) {
+// //       console.error("Error getting connection from pool:", err);
+// //       return res.status(500).json({ message: "Gagal menghubungi database" });
+// //     }
 
-    connection.query(query, [no_urut], (err, result) => {
-      connection.release(); // Melepaskan koneksi kembali ke pool
+// //     connection.query(query, [id], (err, result) => {
+// //       connection.release(); // Melepaskan koneksi kembali ke pool
 
-      if (err) {
-        console.error("Gagal menghapus data jemaat:", err);
-        return res.status(500).json({ message: "Gagal menghapus data" });
-      }
+// //       if (err) {
+// //         console.error("Gagal menghapus data pegawai:", err);
+// //         return res.status(500).json({ message: "Gagal menghapus data" });
+// //       }
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Data tidak ditemukan" });
-      }
+// //       if (result.affectedRows === 0) {
+// //         return res.status(404).json({ message: "Data tidak ditemukan" });
+// //       }
 
-      res.json({ message: "Data jemaat berhasil dihapus" });
-    });
-  });
-});
+// //       res.json({ message: "Data pegawai berhasil dihapus" });
+// //     });
+// //   });
+// // });
 
-app.post("/tambahDataJemaat", (req, res) => {
-  const {
-    no_kk,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif,
-  } = req.body;
+// app.delete("/jemaat/:no_urut", (req, res) => {
+//   const { no_urut } = req.params;
+//   const query = "DELETE FROM jemaat WHERE no_urut = ?";
 
-  // Validasi input wajib
-  if (
-    !nama ||
-    !kode_wilayah ||
-    !tempat_lahir ||
-    !tgl_lahir ||
-    !jenis_kelamin ||
-    !hubungan_keluarga ||
-    !status_nikah ||
-    !status_jemaat ||
-    !keaktifan_jemaat
-  ) {
-    return res.status(400).json({
-      message: "Field wajib tidak boleh kosong!",
-    });
-  }
+//   pool.getConnection((err, connection) => {
+//     if (err) {
+//       console.error("Error getting connection from pool:", err);
+//       return res.status(500).json({ message: "Gagal menghubungi database" });
+//     }
 
-  // Validasi email format sederhana
-  if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-    return res.status(400).json({ message: "Format email tidak valid!" });
-  }
+//     connection.query(query, [no_urut], (err, result) => {
+//       connection.release(); // Melepaskan koneksi kembali ke pool
 
-  // Validasi format nomor telepon sederhana (hanya angka dan + di awal)
-  if (telepon && !/^\+?\d+$/.test(telepon)) {
-    return res.status(400).json({ message: "Format telepon tidak valid!" });
-  }
+//       if (err) {
+//         console.error("Gagal menghapus data jemaat:", err);
+//         return res.status(500).json({ message: "Gagal menghapus data" });
+//       }
 
-  const query = `
-    INSERT INTO jemaat (
-      no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
-      golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
-      pendidikan, jurusan, alamat_sekolah, status_jemaat, keaktifan_jemaat, tgl_tidak_aktif, alasan_tidak_aktif
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+//       if (result.affectedRows === 0) {
+//         return res.status(404).json({ message: "Data tidak ditemukan" });
+//       }
 
-  const values = [
-    no_kk || null,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah || null,
-    hobby || null,
-    telepon || null,
-    email || null,
-    pekerjaan || null,
-    bidang || null,
-    kerja_sampingan || null,
-    alamat_kantor || null,
-    pendidikan || null,
-    jurusan || null,
-    alamat_sekolah || null,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif || null,
-    alasan_tidak_aktif || null,
-  ];
+//       res.json({ message: "Data jemaat berhasil dihapus" });
+//     });
+//   });
+// });
 
-  console.log("req body jemaat", values);
+// app.post("/tambahDataJemaat", (req, res) => {
+//   const {
+//     no_kk,
+//     kode_wilayah,
+//     nama,
+//     tempat_lahir,
+//     tgl_lahir,
+//     jenis_kelamin,
+//     hubungan_keluarga,
+//     status_nikah,
+//     golongan_darah,
+//     hobby,
+//     telepon,
+//     email,
+//     pekerjaan,
+//     bidang,
+//     kerja_sampingan,
+//     alamat_kantor,
+//     pendidikan,
+//     jurusan,
+//     alamat_sekolah,
+//     status_jemaat,
+//     keaktifan_jemaat,
+//     tgl_tidak_aktif,
+//     alasan_tidak_aktif,
+//   } = req.body;
 
-  pool.getConnection((err, connect) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      return res.status(500).json({ message: "Koneksi database gagal." });
-    }
+//   // Validasi input wajib
+//   if (
+//     !nama ||
+//     !kode_wilayah ||
+//     !tempat_lahir ||
+//     !tgl_lahir ||
+//     !jenis_kelamin ||
+//     !hubungan_keluarga ||
+//     !status_nikah ||
+//     !status_jemaat ||
+//     !keaktifan_jemaat
+//   ) {
+//     return res.status(400).json({
+//       message: "Field wajib tidak boleh kosong!",
+//     });
+//   }
 
-    connect.query(query, values, (error, results) => {
-      connect.release(); // Lepaskan koneksi setelah selesai
+//   // Validasi email format sederhana
+//   if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+//     return res.status(400).json({ message: "Format email tidak valid!" });
+//   }
 
-      if (error) {
-        console.error("Error saat menambahkan data jemaat:", error);
-        return res
-          .status(500)
-          .json({ message: "Gagal menambahkan data jemaat." });
-      }
+//   // Validasi format nomor telepon sederhana (hanya angka dan + di awal)
+//   if (telepon && !/^\+?\d+$/.test(telepon)) {
+//     return res.status(400).json({ message: "Format telepon tidak valid!" });
+//   }
 
-      res.status(201).json({
-        message: "Data jemaat berhasil ditambahkan.",
-        dataId: results.insertId,
-      });
-    });
-  });
-});
+//   const query = `
+//     INSERT INTO jemaat (
+//       no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
+//       golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
+//       pendidikan, jurusan, alamat_sekolah, status_jemaat, keaktifan_jemaat, tgl_tidak_aktif, alasan_tidak_aktif
+//     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//   `;
 
-app.post("/tambahDataPegawai", (req, res) => {
-  const {
-    nama,
-    posisi,
-    tanggal_masuk,
-    tanggal_keluar,
-    status_aktif,
-    kode_user,
-  } = req.body;
+//   const values = [
+//     no_kk || null,
+//     kode_wilayah,
+//     nama,
+//     tempat_lahir,
+//     tgl_lahir,
+//     jenis_kelamin,
+//     hubungan_keluarga,
+//     status_nikah,
+//     golongan_darah || null,
+//     hobby || null,
+//     telepon || null,
+//     email || null,
+//     pekerjaan || null,
+//     bidang || null,
+//     kerja_sampingan || null,
+//     alamat_kantor || null,
+//     pendidikan || null,
+//     jurusan || null,
+//     alamat_sekolah || null,
+//     status_jemaat,
+//     keaktifan_jemaat,
+//     tgl_tidak_aktif || null,
+//     alasan_tidak_aktif || null,
+//   ];
 
-  // Validasi field wajib
-  if (!nama || !posisi || !tanggal_masuk || !kode_user) {
-    return res.status(400).json({
-      message:
-        "Semua field wajib diisi, kecuali tanggal_keluar dan status_aktif",
-    });
-  }
+//   console.log("req body jemaat", values);
 
-  // Koneksi ke database
-  pool.getConnection((err, connect) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      return res.status(500).json({ message: "Koneksi ke database gagal." });
-    }
+//   pool.getConnection((err, connect) => {
+//     if (err) {
+//       console.error("Error saat koneksi ke database:", err);
+//       return res.status(500).json({ message: "Koneksi database gagal." });
+//     }
 
-    const query = `
-      INSERT INTO pegawai_dayu (
-        nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `;
+//     connect.query(query, values, (error, results) => {
+//       connect.release(); // Lepaskan koneksi setelah selesai
 
-    const values = [
-      nama,
-      posisi,
-      tanggal_masuk,
-      tanggal_keluar && tanggal_keluar !== "" ? tanggal_keluar : null,
-      status_aktif && status_aktif !== "" ? status_aktif : null,
-      kode_user,
-    ];
+//       if (error) {
+//         console.error("Error saat menambahkan data jemaat:", error);
+//         return res
+//           .status(500)
+//           .json({ message: "Gagal menambahkan data jemaat." });
+//       }
 
-    connect.query(query, values, (err, results) => {
-      connect.release();
+//       res.status(201).json({
+//         message: "Data jemaat berhasil ditambahkan.",
+//         dataId: results.insertId,
+//       });
+//     });
+//   });
+// });
 
-      if (err) {
-        console.error("Error saat menambahkan data pegawai:", err);
-        return res.status(500).json({
-          message: "Gagal menambahkan data pegawai.",
-          error: err.message,
-        });
-      }
+// app.post("/tambahDataPegawai", (req, res) => {
+//   const {
+//     nama,
+//     posisi,
+//     tanggal_masuk,
+//     tanggal_keluar,
+//     status_aktif,
+//     kode_user,
+//   } = req.body;
 
-      return res.status(201).json({
-        message: "Data pegawai berhasil ditambahkan.",
-        dataId: results.insertId,
-      });
-    });
-  });
-});
+//   // Validasi field wajib
+//   if (!nama || !posisi || !tanggal_masuk || !kode_user) {
+//     return res.status(400).json({
+//       message:
+//         "Semua field wajib diisi, kecuali tanggal_keluar dan status_aktif",
+//     });
+//   }
 
-app.post("/tambahDataMajelis", (req, res) => {
-  const {
-    nama,
-    kode_wilayah,
-    jabatan,
-    periode_jabatan,
-    tanggal_SK,
-    tgl_penahbisan,
-    status_aktif,
-    kode_user,
-  } = req.body;
+//   // Koneksi ke database
+//   pool.getConnection((err, connect) => {
+//     if (err) {
+//       console.error("Error saat koneksi ke database:", err);
+//       return res.status(500).json({ message: "Koneksi ke database gagal." });
+//     }
 
-  console.log("debug req json", req.body);
-  // Validasi input (tanpa tgl_penahbisan & status_aktif yang opsional)
-  if (
-    !nama ||
-    !kode_wilayah ||
-    !jabatan ||
-    !periode_jabatan ||
-    !tanggal_SK ||
-    !kode_user
-  ) {
-    return res.status(400).json({
-      message: "Field wajib tidak boleh kosong!",
-    });
-  }
+//     const query = `
+//       INSERT INTO pegawai_dayu (
+//         nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
+//       ) VALUES (?, ?, ?, ?, ?, ?)
+//     `;
 
-  pool.getConnection((err, connect) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      res.status(500).send("Koneksi database gagal.");
-      return;
-    }
+//     const values = [
+//       nama,
+//       posisi,
+//       tanggal_masuk,
+//       tanggal_keluar && tanggal_keluar !== "" ? tanggal_keluar : null,
+//       status_aktif && status_aktif !== "" ? status_aktif : null,
+//       kode_user,
+//     ];
 
-    const query = `
-      INSERT INTO majelis_jemaat (
-        nama, kode_wilayah, jabatan, periode_jabatan, tanggal_SK,
-        tgl_penahbisan, status_aktif, kode_user
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+//     connect.query(query, values, (err, results) => {
+//       connect.release();
 
-    const values = [
-      nama,
-      kode_wilayah,
-      jabatan,
-      periode_jabatan,
-      tanggal_SK,
-      null, // Set null jika tidak diisi
-      null, // Set null jika tidak diisi
-      kode_user,
-    ];
+//       if (err) {
+//         console.error("Error saat menambahkan data pegawai:", err);
+//         return res.status(500).json({
+//           message: "Gagal menambahkan data pegawai.",
+//           error: err.message,
+//         });
+//       }
 
-    connect.query(query, values, (err, results) => {
-      connect.release(); // Selalu release koneksi setelah selesai
+//       return res.status(201).json({
+//         message: "Data pegawai berhasil ditambahkan.",
+//         dataId: results.insertId,
+//       });
+//     });
+//   });
+// });
 
-      if (err) {
-        console.error("Error saat menambahkan data majelis:", err);
-        res.status(500).send("Gagal menambahkan data majelis.");
-        return;
-      } else {
-        res.status(201).json({
-          message: "Data majelis berhasil ditambahkan.",
-          dataId: results.insertId,
-        });
-      }
-    });
-  });
-});
+// app.post("/tambahDataMajelis", (req, res) => {
+//   const {
+//     nama,
+//     kode_wilayah,
+//     jabatan,
+//     periode_jabatan,
+//     tanggal_SK,
+//     tgl_penahbisan,
+//     status_aktif,
+//     kode_user,
+//   } = req.body;
 
-app.get("/jemaat/jumlah", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT COUNT(*) as jumlah_jemaat from jemaat",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+//   console.log("debug req json", req.body);
+//   // Validasi input (tanpa tgl_penahbisan & status_aktif yang opsional)
+//   if (
+//     !nama ||
+//     !kode_wilayah ||
+//     !jabatan ||
+//     !periode_jabatan ||
+//     !tanggal_SK ||
+//     !kode_user
+//   ) {
+//     return res.status(400).json({
+//       message: "Field wajib tidak boleh kosong!",
+//     });
+//   }
 
-app.get("/jemaat/sebaranWilayah", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT kode_wilayah, COUNT(*) as jumlah from jemaat GROUP BY kode_wilayah",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+//   pool.getConnection((err, connect) => {
+//     if (err) {
+//       console.error("Error saat koneksi ke database:", err);
+//       res.status(500).send("Koneksi database gagal.");
+//       return;
+//     }
 
-app.get("/jemaat", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query("SELECT * from jemaat", (err, rows) => {
-      connection.release();
-      if (!err) {
-        res.status(200).json({ data: rows });
-      } else {
-        res.status(500).json({ error: err });
-      }
-    });
-  });
-});
+//     const query = `
+//       INSERT INTO majelis_jemaat (
+//         nama, kode_wilayah, jabatan, periode_jabatan, tanggal_SK,
+//         tgl_penahbisan, status_aktif, kode_user
+//       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//     `;
 
-app.get("/majelis", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query("SELECT * from majelis_jemaat", (err, rows) => {
-      connection.release();
-      if (!err) {
-        res.status(200).json({ data: rows });
-      } else {
-        res.status(500).json({ error: err });
-      }
-    });
-  });
-});
+//     const values = [
+//       nama,
+//       kode_wilayah,
+//       jabatan,
+//       periode_jabatan,
+//       tanggal_SK,
+//       null, // Set null jika tidak diisi
+//       null, // Set null jika tidak diisi
+//       kode_user,
+//     ];
 
-app.get("/jemaatWilayahSatu", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT * from jemaat WHERE kode_wilayah=1;",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+//     connect.query(query, values, (err, results) => {
+//       connect.release(); // Selalu release koneksi setelah selesai
 
-app.get("/jemaatWilayahTiga", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT * from jemaat WHERE kode_wilayah=3;",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+//       if (err) {
+//         console.error("Error saat menambahkan data majelis:", err);
+//         res.status(500).send("Gagal menambahkan data majelis.");
+//         return;
+//       } else {
+//         res.status(201).json({
+//           message: "Data majelis berhasil ditambahkan.",
+//           dataId: results.insertId,
+//         });
+//       }
+//     });
+//   });
+// });
 
-app.get("/jemaatWilayahEmpat", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT * from jemaat WHERE kode_wilayah=4;",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+// app.get("/jemaat/jumlah", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT COUNT(*) as jumlah_jemaat from jemaat",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-app.get("/jemaatWilayahLima", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT * from jemaat WHERE kode_wilayah=5;",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+// app.get("/jemaat/sebaranWilayah", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT kode_wilayah, COUNT(*) as jumlah from jemaat GROUP BY kode_wilayah",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-app.get("/pegawai", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query("SELECT * from pegawai_dayu", (err, rows) => {
-      connection.release();
-      if (!err) {
-        res.status(200).json({ data: rows });
-      } else {
-        res.status(500).json({ error: err });
-      }
-    });
-  });
-});
+// app.get("/jemaat", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query("SELECT * from jemaat", (err, rows) => {
+//       connection.release();
+//       if (!err) {
+//         res.status(200).json({ data: rows });
+//       } else {
+//         res.status(500).json({ error: err });
+//       }
+//     });
+//   });
+// });
 
-app.get("/majelis/jumlah", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT COUNT(*) as jumlah_majelis from majelis_jemaat",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+// app.get("/majelis", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query("SELECT * from majelis_jemaat", (err, rows) => {
+//       connection.release();
+//       if (!err) {
+//         res.status(200).json({ data: rows });
+//       } else {
+//         res.status(500).json({ error: err });
+//       }
+//     });
+//   });
+// });
 
-app.get("/majelis/:id_majelis", (req, res) => {
-  const { id_majelis } = req.params;
+// app.get("/jemaatWilayahSatu", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT * from jemaat WHERE kode_wilayah=1;",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-  const query = "SELECT * FROM majelis_jemaat WHERE id_majelis = ?";
+// app.get("/jemaatWilayahTiga", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT * from jemaat WHERE kode_wilayah=3;",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-  pool.query(query, [id_majelis], (err, results) => {
-    if (err) {
-      console.error("Gagal mengambil data majelis:", err);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+// app.get("/jemaatWilayahEmpat", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT * from jemaat WHERE kode_wilayah=4;",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Data majelis tidak ditemukan." });
-    }
+// app.get("/jemaatWilayahLima", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT * from jemaat WHERE kode_wilayah=5;",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-    res.status(200).json({ message: "Data ditemukan::", data: results[0] });
-  });
-});
+// app.get("/pegawai", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query("SELECT * from pegawai_dayu", (err, rows) => {
+//       connection.release();
+//       if (!err) {
+//         res.status(200).json({ data: rows });
+//       } else {
+//         res.status(500).json({ error: err });
+//       }
+//     });
+//   });
+// });
 
-app.get("/jemaat/:no_urut", (req, res) => {
-  const { no_urut } = req.params;
+// app.get("/majelis/jumlah", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT COUNT(*) as jumlah_majelis from majelis_jemaat",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
 
-  const query = "SELECT * FROM jemaat WHERE no_urut = ?";
+// app.get("/majelis/:id_majelis", (req, res) => {
+//   const { id_majelis } = req.params;
 
-  pool.query(query, [no_urut], (err, results) => {
-    if (err) {
-      console.error("Gagal mengambil data jemaat:", err);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+//   const query = "SELECT * FROM majelis_jemaat WHERE id_majelis = ?";
 
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
-    }
+//   pool.query(query, [id_majelis], (err, results) => {
+//     if (err) {
+//       console.error("Gagal mengambil data majelis:", err);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-    res.status(200).json({ message: "Data ditemukan", data: results[0] });
-  });
-});
+//     if (results.length === 0) {
+//       return res.status(404).json({ message: "Data majelis tidak ditemukan." });
+//     }
 
-app.get("/pegawai_dayu/:id", (req, res) => {
-  const { id } = req.params;
+//     res.status(200).json({ message: "Data ditemukan::", data: results[0] });
+//   });
+// });
 
-  const query = "SELECT * FROM pegawai_dayu WHERE id = ?";
+// app.get("/jemaat/:no_urut", (req, res) => {
+//   const { no_urut } = req.params;
 
-  pool.query(query, [id], (err, results) => {
-    if (err) {
-      console.error("Gagal mengambil data pegawai:", err);
-      return res
-        .status(500)
-        .json({ message: "Terjadi kesalahan pada server." });
-    }
+//   const query = "SELECT * FROM jemaat WHERE no_urut = ?";
 
-    if (results.length === 0) {
-      return res.status(404).json({ message: "Data pegawai tidak ditemukan." });
-    }
+//   pool.query(query, [no_urut], (err, results) => {
+//     if (err) {
+//       console.error("Gagal mengambil data jemaat:", err);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-    res.status(200).json({ message: "Data ditemukan", data: results[0] });
-  });
-});
+//     if (results.length === 0) {
+//       return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
+//     }
 
-app.get("/pegawai/jumlah", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) throw err;
-    connection.query(
-      "SELECT COUNT(*) as jumlah_pegawai from pegawai_dayu",
-      (err, rows) => {
-        connection.release();
-        if (!err) {
-          res.status(200).json({ data: rows });
-        } else {
-          res.status(500).json({ error: err });
-        }
-      }
-    );
-  });
-});
+//     res.status(200).json({ message: "Data ditemukan", data: results[0] });
+//   });
+// });
 
-app.get("/jemaat/ulangTahun", (req, res) => {
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.error("Error saat koneksi ke database:", err);
-      res.status(500).send("Koneksi database gagal.");
-      return;
-    }
+// app.get("/pegawai_dayu/:id", (req, res) => {
+//   const { id } = req.params;
 
-    const query = `
-      SELECT 
-        no_urut,
-        no_induk_jemaat,
-        kode_wilayah,
-        nama, 
-        DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir
-      FROM jemaat
-    `;
+//   const query = "SELECT * FROM pegawai_dayu WHERE id = ?";
 
-    connection.query(query, (err, rows) => {
-      connection.release();
+//   pool.query(query, [id], (err, results) => {
+//     if (err) {
+//       console.error("Gagal mengambil data pegawai:", err);
+//       return res
+//         .status(500)
+//         .json({ message: "Terjadi kesalahan pada server." });
+//     }
 
-      if (err) {
-        console.error("Error saat mengambil data jemaat:", err);
-        res.status(500).send("Gagal mengambil data jemaat.");
-        return;
-      }
+//     if (results.length === 0) {
+//       return res.status(404).json({ message: "Data pegawai tidak ditemukan." });
+//     }
 
-      res.status(200).json({ data: rows });
-    });
-  });
-});
+//     res.status(200).json({ message: "Data ditemukan", data: results[0] });
+//   });
+// });
+
+// app.get("/pegawai/jumlah", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) throw err;
+//     connection.query(
+//       "SELECT COUNT(*) as jumlah_pegawai from pegawai_dayu",
+//       (err, rows) => {
+//         connection.release();
+//         if (!err) {
+//           res.status(200).json({ data: rows });
+//         } else {
+//           res.status(500).json({ error: err });
+//         }
+//       }
+//     );
+//   });
+// });
+
+// app.get("/jemaat/ulangTahun", (req, res) => {
+//   pool.getConnection((err, connection) => {
+//     if (err) {
+//       console.error("Error saat koneksi ke database:", err);
+//       res.status(500).send("Koneksi database gagal.");
+//       return;
+//     }
+
+//     const query = `
+//       SELECT 
+//         no_urut,
+//         no_induk_jemaat,
+//         kode_wilayah,
+//         nama, 
+//         DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir
+//       FROM jemaat
+//     `;
+
+//     connection.query(query, (err, rows) => {
+//       connection.release();
+
+//       if (err) {
+//         console.error("Error saat mengambil data jemaat:", err);
+//         res.status(500).send("Gagal mengambil data jemaat.");
+//         return;
+//       }
+
+//       res.status(200).json({ data: rows });
+//     });
+//   });
+// });
 
 app.get("/jemaat/detailPelayanan", (req, res) => {
   pool.getConnection((err, connection) => {
