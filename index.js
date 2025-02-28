@@ -912,12 +912,13 @@ app.post("/tambahDetailJemaat", (req, res) => {
 
   const query = `
     INSERT INTO detail_jemaat (
-      pelayanan_diikuti, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak,
-      tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, tempat_nikah,
-      tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, alasan_keluar,
-      tgl_meninggal, tempat_meninggal, tempat_pemakaman, penghasilan, transportasi,
-      kondisi_fisik, deskripsi_disabilitas, penyakit_sering_diderita, alamat_rumah,
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      pelayanan_diikuti, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak, 
+      tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, 
+      tempat_nikah, tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, 
+      alasan_keluar, tgl_meninggal, tempat_meninggal, tempat_pemakaman, penghasilan, 
+      transportasi, kondisi_fisik, deskripsi_disabilitas, penyakit_sering_diderita, alamat_rumah
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
   const values = [
     pelayanan_diikuti,
@@ -950,24 +951,20 @@ app.post("/tambahDetailJemaat", (req, res) => {
 
   pool.getConnection((err, connect) => {
     if (err) {
-      console.error("Error saat koneksi ke database:", err);
+      console.error("Error koneksi ke database:", err);
       return res.status(500).json({ message: "Koneksi database gagal." });
     }
 
     connect.query(query, values, (error, results) => {
-      connect.release(); // Lepaskan koneksi setelah selesai
-
+      connect.release();
       if (error) {
-        console.error("Error saat menambahkan data detail jemaat:", error);
+        console.error("Error saat menambahkan detail jemaat:", error);
         return res
           .status(500)
-          .json({ message: "Gagal menambahkan data  detail jemaat." });
+          .json({ message: "Gagal menambahkan detail jemaat." });
       }
 
-      res.status(201).json({
-        message: "Data jemaat berhasil ditambahkan.",
-        dataId: results.insertId,
-      });
+      res.status(201).json({ message: "Detail jemaat berhasil ditambahkan." });
     });
   });
 });
