@@ -436,6 +436,96 @@ app.delete("/jemaat/:no_urut", (req, res) => {
   });
 });
 
+app.post("/tambahDetailJemaat", (req, res) => {
+  const {
+    pelayanan_diikuti,
+    pelayanan_diminati,
+    tgl_baptis_anak,
+    tempat_baptis_anak,
+    tanggal_baptis_dewasa,
+    tempat_baptis_dewasa,
+    tgl_sidhi,
+    tampat_sidhi,
+    tgl_nikah,
+    tempat_nikah,
+    tgl_masuk_gereja,
+    asal_gereja,
+    tgl_keluar_gereja,
+    gereja_tujuan,
+    alasan_keluar,
+    tgl_meninggal,
+    tempat_meninggal,
+    tempat_pemakaman,
+    penghasilan,
+    transportasi,
+    kondisi_fisik,
+    deskripsi_disabilitas,
+    penyakit_sering_diderita,
+    alamat_rumah,
+  } = req.body;
+
+  const query = `
+    INSERT INTO detail_jemaat (
+      pelayanan_diikuti, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak,
+      tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, tempat_nikah,
+      tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, alasan_keluar,
+      tgl_meninggal, tempat_meninggal, tempat_pemakaman, penghasilan, transportasi,
+      kondisi_fisik, deskripsi_disabilitas, penyakit_sering_diderita, alamat_rumah,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+  const values = [
+    pelayanan_diikuti,
+    pelayanan_diminati,
+    tgl_baptis_anak,
+    tempat_baptis_anak,
+    tanggal_baptis_dewasa,
+    tempat_baptis_dewasa,
+    tgl_sidhi,
+    tampat_sidhi,
+    tgl_nikah,
+    tempat_nikah,
+    tgl_masuk_gereja,
+    asal_gereja,
+    tgl_keluar_gereja,
+    gereja_tujuan,
+    alasan_keluar,
+    tgl_meninggal,
+    tempat_meninggal,
+    tempat_pemakaman,
+    penghasilan,
+    transportasi,
+    kondisi_fisik,
+    deskripsi_disabilitas,
+    penyakit_sering_diderita,
+    alamat_rumah,
+  ];
+
+  console.log("req body detailjemaat", values);
+
+  pool.getConnection((err, connect) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      return res.status(500).json({ message: "Koneksi database gagal." });
+    }
+
+    connect.query(query, values, (error, results) => {
+      connect.release(); // Lepaskan koneksi setelah selesai
+
+      if (error) {
+        console.error("Error saat menambahkan data detail jemaat:", error);
+        return res
+          .status(500)
+          .json({ message: "Gagal menambahkan data  detail jemaat." });
+      }
+
+      res.status(201).json({
+        message: "Data jemaat berhasil ditambahkan.",
+        dataId: results.insertId,
+      });
+    });
+  });
+});
+
 app.post("/tambahDataJemaat", (req, res) => {
   const {
     no_kk,
@@ -524,27 +614,61 @@ app.post("/tambahDataJemaat", (req, res) => {
     alasan_tidak_aktif || null,
   ];
 
-  console.log("req body jemaat", values);
-
   pool.getConnection((err, connect) => {
     if (err) {
       console.error("Error saat koneksi ke database:", err);
       return res.status(500).json({ message: "Koneksi database gagal." });
     }
 
-    connect.query(query, values, (error, results) => {
-      connect.release(); // Lepaskan koneksi setelah selesai
-
-      if (error) {
-        console.error("Error saat menambahkan data jemaat:", error);
-        return res
-          .status(500)
-          .json({ message: "Gagal menambahkan data jemaat." });
+    // Mulai transaksi
+    connect.beginTransaction((transErr) => {
+      if (transErr) {
+        connect.release();
+        return res.status(500).json({ message: "Gagal memulai transaksi." });
       }
 
-      res.status(201).json({
-        message: "Data jemaat berhasil ditambahkan.",
-        dataId: results.insertId,
+      connect.query(query, values, (error, results) => {
+        if (error) {
+          return connect.rollback(() => {
+            connect.release();
+            console.error("Error saat menambahkan data jemaat:", error);
+            res.status(500).json({ message: "Gagal menambahkan data jemaat." });
+          });
+        }
+
+        const insertedId = results.insertId;
+
+        // Update no_induk_jemaat dengan no_urut (insertedId)
+        const updateQuery = `UPDATE jemaat SET no_induk_jemaat = ? WHERE no_urut = ?`;
+
+        connect.query(updateQuery, [insertedId, insertedId], (updateError) => {
+          if (updateError) {
+            return connect.rollback(() => {
+              connect.release();
+              console.error(
+                "Error saat memperbarui no_induk_jemaat:",
+                updateError
+              );
+              res
+                .status(500)
+                .json({ message: "Gagal memperbarui no_induk_jemaat." });
+            });
+          }
+
+          connect.commit((commitErr) => {
+            connect.release();
+            if (commitErr) {
+              return res
+                .status(500)
+                .json({ message: "Gagal menyimpan transaksi." });
+            }
+
+            res.status(201).json({
+              message: "Data jemaat berhasil ditambahkan.",
+              dataId: insertedId,
+            });
+          });
+        });
       });
     });
   });
