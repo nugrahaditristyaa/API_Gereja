@@ -35,6 +35,452 @@ const pool = mysql.createPool({
   database: "71210677",
 });
 
+app.get("/jemaat/ulangTahun", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_urut,
+        no_induk_jemaat,
+        kode_wilayah,
+        nama, 
+        DATE_FORMAT(tgl_lahir, '%Y-%m-%d') as tanggal_lahir
+      FROM jemaat
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/detailPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.no_urut,
+        j.no_induk_jemaat,
+        j.kode_wilayah,
+        j.nama, 
+        d.pelayanan_diikuti,
+        j.telepon
+      FROM 
+        jemaat j
+      JOIN
+        detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/detailPekerjaan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_urut,
+        no_induk_jemaat,
+        kode_wilayah,
+        nama,
+        pekerjaan,
+        bidang,
+        telepon
+      FROM jemaat 
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/detailGolonganDarah", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_urut,
+        no_induk_jemaat,
+        kode_wilayah,
+        nama,
+        golongan_darah,
+        telepon
+      FROM jemaat 
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/detailGender", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        no_urut,
+        no_induk_jemaat,
+        kode_wilayah,
+        nama,
+        jenis_kelamin,
+        telepon
+      FROM jemaat 
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/detailDisabilitas", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.no_urut,
+        j.no_induk_jemaat,
+        j.kode_wilayah,
+        j.nama, 
+        d.kondisi_fisik,
+        d.deskripsi_disabilitas,
+        j.telepon
+      FROM 
+        jemaat j
+      JOIN
+        detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT
+      j.kode_wilayah,
+      d.pelayanan_diikuti,
+      COUNT(*) AS total_warga
+    FROM
+      jemaat j
+    JOIN
+      detail_jemaat d ON j.no_induk_jemaat = d.no_induk_jemaat
+    GROUP BY
+      j.kode_wilayah, d.pelayanan_diikuti
+    ORDER BY
+      total_warga DESC
+    LIMIT 4
+  `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+
+      const transformedData = rows.reduce((acc, row) => {
+        const wilayah = acc.find((w) => w.kode_wilayah === row.kode_wilayah);
+
+        if (!wilayah) {
+          acc.push({
+            kode_wilayah: row.kode_wilayah,
+            pelayanans: [
+              {
+                pelayanan_diikuti: row.pelayanan_diikuti,
+                total_warga: row.total_warga,
+              },
+            ],
+          });
+        } else {
+          wilayah.pelayanans.push({
+            pelayanan_diikuti: row.pelayanan_diikuti,
+            total_warga: row.total_warga,
+          });
+        }
+
+        return acc;
+      }, []);
+
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranGrafikDisabilitas", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.kode_wilayah,
+        d.kondisi_fisik,
+        COUNT(*) AS total 
+      FROM detail_jemaat d
+      JOIN jemaat j ON d.no_induk_jemaat = j.no_induk_jemaat
+      GROUP BY j.kode_wilayah, d.kondisi_fisik
+      ORDER BY j.kode_wilayah, d.kondisi_fisik DESC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = rows.reduce((acc, row) => {
+        const { kode_wilayah, kondisi_fisik, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { Disabilitas: 0, "Non Disabilitas": 0 };
+        }
+        acc[kode_wilayah][kondisi_fisik] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+app.get("/jemaat/sebaranGrafikPekerjaan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        pekerjaan,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, pekerjaan
+      ORDER BY kode_wilayah, pekerjaan ASC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranGrafikPelayanan", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        j.kode_wilayah,
+        d.pelayanan_diikuti,
+        COUNT(*) AS total 
+      FROM detail_jemaat d 
+      JOIN jemaat j ON d.no_induk_jemaat = j.no_induk_jemaat
+      GROUP BY kode_wilayah, pelayanan_diikuti
+      ORDER BY kode_wilayah, pelayanan_diikuti ASC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranGrafikGender", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        jenis_kelamin,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, jenis_kelamin
+      ORDER BY kode_wilayah, jenis_kelamin ASC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = rows.reduce((acc, row) => {
+        const { kode_wilayah, jenis_kelamin, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { "Laki-laki": 0, Perempuan: 0 };
+        }
+        acc[kode_wilayah][jenis_kelamin] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
+app.get("/jemaat/sebaranGrafikGolonganDarah", (req, res) => {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      res.status(500).send("Koneksi database gagal.");
+      return;
+    }
+
+    const query = `
+      SELECT 
+        kode_wilayah,
+        golongan_darah,
+        COUNT(*) AS total 
+      FROM jemaat 
+      GROUP BY kode_wilayah, golongan_darah
+      ORDER BY kode_wilayah, golongan_darah DESC
+    `;
+
+    connection.query(query, (err, rows) => {
+      connection.release();
+
+      if (err) {
+        console.error("Error saat mengambil data jemaat:", err);
+        res.status(500).send("Gagal mengambil data jemaat.");
+        return;
+      }
+      const data = rows.reduce((acc, row) => {
+        const { kode_wilayah, golongan_darah, total } = row;
+        if (!acc[kode_wilayah]) {
+          acc[kode_wilayah] = { A: 0, B: 0, O: 0, AB: 0 };
+        }
+        acc[kode_wilayah][golongan_darah] = total;
+        return acc;
+      }, {});
+      res.status(200).json({ data: rows });
+    });
+  });
+});
+
 app.get("/jemaat", (req, res) => {
   pool.getConnection((err, connection) => {
     if (err) throw err;
