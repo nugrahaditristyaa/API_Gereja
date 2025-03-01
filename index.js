@@ -994,9 +994,33 @@ app.post("/tambahDataJemaat", (req, res) => {
     keaktifan_jemaat,
     tgl_tidak_aktif,
     alasan_tidak_aktif,
+    // Detail Jemaat
+    pelayanan_diikuti,
+    pelayanan_diminati,
+    tgl_baptis_anak,
+    tempat_baptis_anak,
+    tanggal_baptis_dewasa,
+    tempat_baptis_dewasa,
+    tgl_sidhi,
+    tampat_sidhi,
+    tgl_nikah,
+    tempat_nikah,
+    tgl_masuk_gereja,
+    asal_gereja,
+    tgl_keluar_gereja,
+    gereja_tujuan,
+    alasan_keluar,
+    tgl_meninggal,
+    tempat_meninggal,
+    tempat_pemakaman,
+    penghasilan,
+    transportasi,
+    kondisi_fisik,
+    deskripsi_disabilitas,
+    penyakit_sering_diderita,
+    alamat_rumah,
   } = req.body;
 
-  // Validasi input wajib
   if (
     !nama ||
     !kode_wilayah ||
@@ -1008,22 +1032,18 @@ app.post("/tambahDataJemaat", (req, res) => {
     !status_jemaat ||
     !keaktifan_jemaat
   ) {
-    return res.status(400).json({
-      message: "Field wajib tidak boleh kosong!",
-    });
+    return res.status(400).json({ message: "Field wajib tidak boleh kosong!" });
   }
 
-  // Validasi email format sederhana
   if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
     return res.status(400).json({ message: "Format email tidak valid!" });
   }
 
-  // Validasi format nomor telepon sederhana (hanya angka dan + di awal)
   if (telepon && !/^\+?\d+$/.test(telepon)) {
     return res.status(400).json({ message: "Format telepon tidak valid!" });
   }
 
-  const query = `
+  const insertJemaatQuery = `
     INSERT INTO jemaat (
       no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
       golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
@@ -1031,31 +1051,15 @@ app.post("/tambahDataJemaat", (req, res) => {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const values = [
-    no_kk || null,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah || null,
-    hobby || null,
-    telepon || null,
-    email || null,
-    pekerjaan || null,
-    bidang || null,
-    kerja_sampingan || null,
-    alamat_kantor || null,
-    pendidikan || null,
-    jurusan || null,
-    alamat_sekolah || null,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif || null,
-    alasan_tidak_aktif || null,
-  ];
+  const insertDetailJemaatQuery = `
+    INSERT INTO detail_jemaat (
+      pelayanan_diikuti, no_induk_jemaat, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak,
+      tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, tempat_nikah,
+      tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, alasan_keluar, tgl_meninggal,
+      tempat_meninggal, tempat_pemakaman, penghasilan, transportasi, kondisi_fisik, deskripsi_disabilitas,
+      penyakit_sering_diderita, alamat_rumah
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
   pool.getConnection((err, connect) => {
     if (err) {
@@ -1063,14 +1067,39 @@ app.post("/tambahDataJemaat", (req, res) => {
       return res.status(500).json({ message: "Koneksi database gagal." });
     }
 
-    // Mulai transaksi
     connect.beginTransaction((transErr) => {
       if (transErr) {
         connect.release();
         return res.status(500).json({ message: "Gagal memulai transaksi." });
       }
 
-      connect.query(query, values, (error, results) => {
+      const jemaatValues = [
+        no_kk || null,
+        kode_wilayah,
+        nama,
+        tempat_lahir,
+        tgl_lahir,
+        jenis_kelamin,
+        hubungan_keluarga,
+        status_nikah,
+        golongan_darah || null,
+        hobby || null,
+        telepon || null,
+        email || null,
+        pekerjaan || null,
+        bidang || null,
+        kerja_sampingan || null,
+        alamat_kantor || null,
+        pendidikan || null,
+        jurusan || null,
+        alamat_sekolah || null,
+        status_jemaat,
+        keaktifan_jemaat,
+        tgl_tidak_aktif || null,
+        alasan_tidak_aktif || null,
+      ];
+
+      connect.query(insertJemaatQuery, jemaatValues, (error, results) => {
         if (error) {
           return connect.rollback(() => {
             connect.release();
@@ -1079,22 +1108,44 @@ app.post("/tambahDataJemaat", (req, res) => {
           });
         }
 
-        const insertedId = results.insertId;
+        const noIndukJemaat = results.insertId; // Ambil ID yang baru saja dimasukkan
 
-        // Update no_induk_jemaat dengan no_urut (insertedId)
-        const updateQuery = `UPDATE jemaat SET no_induk_jemaat = ? WHERE no_urut = ?`;
+        const detailJemaatValues = [
+          pelayanan_diikuti,
+          noIndukJemaat,
+          pelayanan_diminati,
+          tgl_baptis_anak,
+          tempat_baptis_anak,
+          tanggal_baptis_dewasa,
+          tempat_baptis_dewasa,
+          tgl_sidhi,
+          tampat_sidhi,
+          tgl_nikah,
+          tempat_nikah,
+          tgl_masuk_gereja,
+          asal_gereja,
+          tgl_keluar_gereja,
+          gereja_tujuan,
+          alasan_keluar,
+          tgl_meninggal,
+          tempat_meninggal,
+          tempat_pemakaman,
+          penghasilan,
+          transportasi,
+          kondisi_fisik,
+          deskripsi_disabilitas,
+          penyakit_sering_diderita,
+          alamat_rumah,
+        ];
 
-        connect.query(updateQuery, [insertedId, insertedId], (updateError) => {
-          if (updateError) {
+        connect.query(insertDetailJemaatQuery, detailJemaatValues, (error) => {
+          if (error) {
             return connect.rollback(() => {
               connect.release();
-              console.error(
-                "Error saat memperbarui no_induk_jemaat:",
-                updateError
-              );
+              console.error("Error saat menambahkan detail jemaat:", error);
               res
                 .status(500)
-                .json({ message: "Gagal memperbarui no_induk_jemaat." });
+                .json({ message: "Gagal menambahkan detail jemaat." });
             });
           }
 
@@ -1108,7 +1159,7 @@ app.post("/tambahDataJemaat", (req, res) => {
 
             res.status(201).json({
               message: "Data jemaat berhasil ditambahkan.",
-              dataId: insertedId,
+              // no_induk_jemaat: noIndukJemaat,
             });
           });
         });
@@ -1143,10 +1194,10 @@ app.post("/tambahDataPegawai", (req, res) => {
     }
 
     const query = `
-      INSERT INTO pegawai_dayu (
-        nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `;
+        INSERT INTO pegawai_dayu (
+          nama, posisi, tanggal_masuk, tanggal_keluar, status_aktif, kode_user
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `;
 
     const values = [
       nama,
