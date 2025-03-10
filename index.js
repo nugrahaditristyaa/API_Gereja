@@ -994,7 +994,6 @@ app.post("/tambahDataJemaat", (req, res) => {
     keaktifan_jemaat,
     tgl_tidak_aktif,
     alasan_tidak_aktif,
-    // Detail Jemaat
     pelayanan_diikuti,
     pelayanan_diminati,
     tgl_baptis_anak,
@@ -1035,35 +1034,9 @@ app.post("/tambahDataJemaat", (req, res) => {
     return res.status(400).json({ message: "Field wajib tidak boleh kosong!" });
   }
 
-  if (email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-    return res.status(400).json({ message: "Format email tidak valid!" });
-  }
-
-  if (telepon && !/^\+?\d+$/.test(telepon)) {
-    return res.status(400).json({ message: "Format telepon tidak valid!" });
-  }
-
-  const insertJemaatQuery = `
-    INSERT INTO jemaat (
-      no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
-      golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
-      pendidikan, jurusan, alamat_sekolah, status_jemaat, keaktifan_jemaat, tgl_tidak_aktif, alasan_tidak_aktif
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const insertDetailJemaatQuery = `
-    INSERT INTO detail_jemaat (
-      pelayanan_diikuti, no_induk_jemaat, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak,
-      tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, tempat_nikah,
-      tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, alasan_keluar, tgl_meninggal,
-      tempat_meninggal, tempat_pemakaman, penghasilan, transportasi, kondisi_fisik, deskripsi_disabilitas,
-      penyakit_sering_diderita, alamat_rumah
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
   pool.getConnection((err, connect) => {
     if (err) {
-      console.error("Error saat koneksi ke database:", err);
+      console.error("Error koneksi database:", err);
       return res.status(500).json({ message: "Koneksi database gagal." });
     }
 
@@ -1072,6 +1045,14 @@ app.post("/tambahDataJemaat", (req, res) => {
         connect.release();
         return res.status(500).json({ message: "Gagal memulai transaksi." });
       }
+
+      const insertJemaatQuery = `
+        INSERT INTO jemaat (
+          no_kk, kode_wilayah, nama, tempat_lahir, tgl_lahir, jenis_kelamin, hubungan_keluarga, status_nikah,
+          golongan_darah, hobby, telepon, email, pekerjaan, bidang, kerja_sampingan, alamat_kantor,
+          pendidikan, jurusan, alamat_sekolah, status_jemaat, keaktifan_jemaat, tgl_tidak_aktif, alasan_tidak_aktif
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
 
       const jemaatValues = [
         no_kk || null,
@@ -1103,12 +1084,22 @@ app.post("/tambahDataJemaat", (req, res) => {
         if (error) {
           return connect.rollback(() => {
             connect.release();
-            console.error("Error saat menambahkan data jemaat:", error);
+            console.error("Error saat insert jemaat:", error);
             res.status(500).json({ message: "Gagal menambahkan data jemaat." });
           });
         }
 
-        const noIndukJemaat = results.insertId; // Ambil ID yang baru saja dimasukkan
+        const noIndukJemaat = results.insertId; // Ambil ID dari jemaat yang baru dimasukkan
+
+        const insertDetailJemaatQuery = `
+          INSERT INTO detail_jemaat (
+            pelayanan_diikuti, no_induk_jemaat, pelayanan_diminati, tgl_baptis_anak, tempat_baptis_anak,
+            tanggal_baptis_dewasa, tempat_baptis_dewasa, tgl_sidhi, tampat_sidhi, tgl_nikah, tempat_nikah,
+            tgl_masuk_gereja, asal_gereja, tgl_keluar_gereja, gereja_tujuan, alasan_keluar, tgl_meninggal,
+            tempat_meninggal, tempat_pemakaman, penghasilan, transportasi, kondisi_fisik, deskripsi_disabilitas,
+            penyakit_sering_diderita, alamat_rumah
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
 
         const detailJemaatValues = [
           pelayanan_diikuti,
@@ -1142,26 +1133,45 @@ app.post("/tambahDataJemaat", (req, res) => {
           if (error) {
             return connect.rollback(() => {
               connect.release();
-              console.error("Error saat menambahkan detail jemaat:", error);
+              console.error("Error saat insert detail jemaat:", error);
               res
                 .status(500)
                 .json({ message: "Gagal menambahkan detail jemaat." });
             });
           }
 
-          connect.commit((commitErr) => {
-            connect.release();
-            if (commitErr) {
-              return res
-                .status(500)
-                .json({ message: "Gagal menyimpan transaksi." });
-            }
+          // Update jemaat untuk menyimpan no_induk_jemaat yang benar
+          const updateNoIndukQuery = `UPDATE jemaat SET no_induk_jemaat = ? WHERE no_urut = ?`;
 
-            res.status(201).json({
-              message: "Data jemaat berhasil ditambahkan.",
-              // no_induk_jemaat: noIndukJemaat,
-            });
-          });
+          connect.query(
+            updateNoIndukQuery,
+            [noIndukJemaat, noIndukJemaat],
+            (updateError) => {
+              if (updateError) {
+                return connect.rollback(() => {
+                  connect.release();
+                  console.error("Error update no_induk_jemaat:", updateError);
+                  res
+                    .status(500)
+                    .json({ message: "Gagal memperbarui no_induk_jemaat." });
+                });
+              }
+
+              connect.commit((commitErr) => {
+                connect.release();
+                if (commitErr) {
+                  return res
+                    .status(500)
+                    .json({ message: "Gagal menyimpan transaksi." });
+                }
+
+                res.status(201).json({
+                  message: "Data jemaat berhasil ditambahkan.",
+                  no_induk_jemaat: noIndukJemaat,
+                });
+              });
+            }
+          );
         });
       });
     });
