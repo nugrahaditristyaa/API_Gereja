@@ -580,94 +580,161 @@ app.put("/updateJemaat/:no_urut", (req, res) => {
     keaktifan_jemaat,
     tgl_tidak_aktif,
     alasan_tidak_aktif,
+    pelayanan_diikuti,
+    pelayanan_diminati,
+    tgl_baptis_anak,
+    tempat_baptis_anak,
+    tanggal_baptis_dewasa,
+    tempat_baptis_dewasa,
+    tgl_sidhi,
+    tampat_sidhi,
+    tgl_nikah,
+    tempat_nikah,
+    tgl_masuk_gereja,
+    asal_gereja,
+    tgl_keluar_gereja,
+    gereja_tujuan,
+    alasan_keluar,
+    tgl_meninggal,
+    tempat_meninggal,
+    tempat_pemakaman,
+    penghasilan,
+    transportasi,
+    kondisi_fisik,
+    deskripsi_disabilitas,
+    penyakit_sering_diderita,
+    alamat_rumah,
   } = req.body;
 
-  //validasi form yang wajib diisi
-  if (
-    !nama ||
-    !tempat_lahir ||
-    !tgl_lahir ||
-    !jenis_kelamin ||
-    !hubungan_keluarga ||
-    !status_nikah ||
-    !status_jemaat ||
-    !kode_wilayah ||
-    !keaktifan_jemaat
-  ) {
-    return res
-      .status(400)
-      .json({ message: "Data wajib tidak boleh kosong! ya" });
-  }
-
-  const query = `
-  UPDATE jemaat 
-  SET 
-    no_kk = ?, 
-    kode_wilayah = ?, 
-    nama = ?, 
-    tempat_lahir = ?, 
-    tgl_lahir = ?, 
-    jenis_kelamin = ?, 
-    hubungan_keluarga = ?, 
-    status_nikah = ?, 
-    golongan_darah = ?, 
-    hobby = ?, 
-    telepon = ?, 
-    email = ?, 
-    pekerjaan = ?, 
-    bidang = ?, 
-    kerja_sampingan = ?, 
-    alamat_kantor = ?, 
-    pendidikan = ?, 
-    jurusan = ?, 
-    alamat_sekolah = ?, 
-    status_jemaat = ?, 
-    keaktifan_jemaat = ?, 
-    tgl_tidak_aktif = ?, 
-    alasan_tidak_aktif = ?
-  WHERE no_urut = ?;
-`;
-
-  const values = [
-    no_kk,
-    kode_wilayah,
-    nama,
-    tempat_lahir,
-    tgl_lahir,
-    jenis_kelamin,
-    hubungan_keluarga,
-    status_nikah,
-    golongan_darah,
-    hobby,
-    telepon,
-    email,
-    pekerjaan,
-    bidang,
-    kerja_sampingan,
-    alamat_kantor,
-    pendidikan,
-    jurusan,
-    alamat_sekolah,
-    status_jemaat,
-    keaktifan_jemaat,
-    tgl_tidak_aktif,
-    alasan_tidak_aktif,
-    no_urut,
-  ];
-
-  pool.query(query, values, (error, result) => {
-    if (error) {
-      console.error("Error updating jemaat:", error);
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error getting connection:", err);
       return res
         .status(500)
         .json({ message: "Terjadi kesalahan pada server." });
     }
 
-    if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Jemaat berhasil diperbarui!" });
-    } else {
-      res.status(404).json({ message: "Jemaat tidak ditemukan." });
-    }
+    connection.beginTransaction((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Gagal memulai transaksi." });
+      }
+
+      const queryJemaat = `
+        UPDATE jemaat 
+        SET no_kk = ?, kode_wilayah = ?, nama = ?, tempat_lahir = ?, tgl_lahir = ?, 
+            jenis_kelamin = ?, hubungan_keluarga = ?, status_nikah = ?, golongan_darah = ?, 
+            hobby = ?, telepon = ?, email = ?, pekerjaan = ?, bidang = ?, kerja_sampingan = ?, 
+            alamat_kantor = ?, pendidikan = ?, jurusan = ?, alamat_sekolah = ?, status_jemaat = ?, 
+            keaktifan_jemaat = ?, tgl_tidak_aktif = ?, alasan_tidak_aktif = ? 
+        WHERE no_induk_jemaat = ?;
+      `;
+
+      const valuesJemaat = [
+        no_kk || null,
+        kode_wilayah || null,
+        nama || null,
+        tempat_lahir || null,
+        tgl_lahir || null,
+        jenis_kelamin || null,
+        hubungan_keluarga || null,
+        status_nikah || null,
+        golongan_darah || null,
+        hobby || null,
+        telepon || null,
+        email || null,
+        pekerjaan || null,
+        bidang || null,
+        kerja_sampingan || null,
+        alamat_kantor || null,
+        pendidikan || null,
+        jurusan || null,
+        alamat_sekolah || null,
+        status_jemaat || null,
+        keaktifan_jemaat || null,
+        tgl_tidak_aktif || null,
+        alasan_tidak_aktif || null,
+        no_urut,
+      ];
+
+      connection.query(queryJemaat, valuesJemaat, (error, result) => {
+        if (error) {
+          connection.rollback(() => {
+            console.error("Error updating jemaat:", error);
+            res.status(500).json({ message: "Gagal memperbarui data jemaat." });
+          });
+          return;
+        }
+
+        const queryDetailJemaat = `
+          UPDATE detail_jemaat 
+          SET pelayanan_diikuti = ?, pelayanan_diminati = ?, tgl_baptis_anak = ?, tempat_baptis_anak = ?, 
+              tanggal_baptis_dewasa = ?, tempat_baptis_dewasa = ?, tgl_sidhi = ?, tampat_sidhi = ?, 
+              tgl_nikah = ?, tempat_nikah = ?, tgl_masuk_gereja = ?, asal_gereja = ?, 
+              tgl_keluar_gereja = ?, gereja_tujuan = ?, alasan_keluar = ?, tgl_meninggal = ?, 
+              tempat_meninggal = ?, tempat_pemakaman = ?, penghasilan = ?, transportasi = ?, 
+              kondisi_fisik = ?, deskripsi_disabilitas = ?, penyakit_sering_diderita = ?, alamat_rumah = ? 
+          WHERE no_induk_jemaat = ?;
+        `;
+
+        const valuesDetailJemaat = [
+          pelayanan_diikuti || null,
+          pelayanan_diminati || null,
+          tgl_baptis_anak || null,
+          tempat_baptis_anak || null,
+          tanggal_baptis_dewasa || null,
+          tempat_baptis_dewasa || null,
+          tgl_sidhi || null,
+          tampat_sidhi || null,
+          tgl_nikah || null,
+          tempat_nikah || null,
+          tgl_masuk_gereja || null,
+          asal_gereja || null,
+          tgl_keluar_gereja || null,
+          gereja_tujuan || null,
+          alasan_keluar || null,
+          tgl_meninggal || null,
+          tempat_meninggal || null,
+          tempat_pemakaman || null,
+          penghasilan || null,
+          transportasi || null,
+          kondisi_fisik || null,
+          deskripsi_disabilitas || null,
+          penyakit_sering_diderita || null,
+          alamat_rumah || null,
+          no_urut,
+        ];
+
+        connection.query(
+          queryDetailJemaat,
+          valuesDetailJemaat,
+          (error, result) => {
+            if (error) {
+              connection.rollback(() => {
+                console.error("Error updating detail jemaat:", error);
+                res
+                  .status(500)
+                  .json({ message: "Gagal memperbarui data detail jemaat." });
+              });
+              return;
+            }
+
+            connection.commit((err) => {
+              if (err) {
+                connection.rollback(() => {
+                  res
+                    .status(500)
+                    .json({ message: "Gagal menyimpan perubahan." });
+                });
+                return;
+              }
+              res
+                .status(200)
+                .json({ message: "Data jemaat berhasil diperbarui!" });
+            });
+          }
+        );
+      });
+    });
   });
 });
 
@@ -994,6 +1061,7 @@ app.post("/tambahDataJemaat", (req, res) => {
     keaktifan_jemaat,
     tgl_tidak_aktif,
     alasan_tidak_aktif,
+    //Detail Jemaat
     pelayanan_diikuti,
     pelayanan_diminati,
     tgl_baptis_anak,
@@ -1193,6 +1261,21 @@ app.post("/tambahDataPegawai", (req, res) => {
     return res.status(400).json({
       message:
         "Semua field wajib diisi, kecuali tanggal_keluar dan status_aktif",
+    });
+  }
+
+  // Validasi format tanggal_masuk (harus yyyy-mm-dd)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(tanggal_masuk)) {
+    return res.status(400).json({
+      message: "Format tanggal_masuk harus yyyy-mm-dd",
+    });
+  }
+
+  // Validasi format tanggal_keluar (jika diisi)
+  if (tanggal_keluar && !dateRegex.test(tanggal_keluar)) {
+    return res.status(400).json({
+      message: "Format tanggal_keluar harus yyyy-mm-dd",
     });
   }
 
@@ -1504,7 +1587,7 @@ app.get("/jemaat/:no_urut", (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
     }
-
+    console.log("datajemaatbyid", results[0]);
     res.status(200).json({ message: "Data ditemukan", data: results[0] });
   });
 });
@@ -2118,6 +2201,46 @@ app.get("/pekerjaan", (req, res) => {
 //         });
 //     });
 // });
+
+app.post("/login", async (req, res) => {
+  const { email, pw } = req.body;
+
+  // Validasi input
+  if (!email || !pw) {
+    return res.status(400).json({ message: "Email dan password wajib diisi." });
+  }
+
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Error saat koneksi ke database:", err);
+      return res.status(500).json({ message: "Koneksi database gagal." });
+    }
+
+    const query = `
+      SELECT * FROM user_tbl WHERE email = ? AND user_password = ?;
+    `;
+
+    // Gunakan satu array untuk semua parameter query
+    connection.query(query, [email, pw], (err, rows) => {
+      connection.release(); // Lepaskan koneksi
+
+      if (err) {
+        console.error("Login failed:", err);
+        return res
+          .status(500)
+          .json({ message: "Terjadi kesalahan pada server." });
+      }
+
+      // Periksa apakah ada baris yang ditemukan
+      if (rows.length === 0) {
+        return res.status(401).json({ message: "Email atau password salah." });
+      }
+
+      // Jika login berhasil
+      res.status(200).json({ message: "Login berhasil!", user: rows[0] });
+    });
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
