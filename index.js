@@ -507,6 +507,21 @@ app.put("/updatePegawai/:id", (req, res) => {
       .json({ message: "Nama, Posisi, dan Tanggal Masuk wajib diisi!" });
   }
 
+  // Validasi format tanggal_masuk (harus yyyy-mm-dd)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(tanggal_masuk)) {
+    return res
+      .status(400)
+      .json({ message: "Format tanggal_masuk harus yyyy-mm-dd!" });
+  }
+
+  // Validasi format tanggal_keluar (jika ada)
+  if (tanggal_keluar && !dateRegex.test(tanggal_keluar)) {
+    return res
+      .status(400)
+      .json({ message: "Format tanggal_keluar harus yyyy-mm-dd!" });
+  }
+
   // Konversi ID menjadi integer untuk keamanan
   const pegawaiId = parseInt(id, 10);
   if (isNaN(pegawaiId)) {
@@ -520,8 +535,8 @@ app.put("/updatePegawai/:id", (req, res) => {
       nama = ?, 
       posisi = ?, 
       tanggal_masuk = ?, 
-      tanggal_keluar = COALESCE(?, tanggal_keluar), 
-      status_aktif = COALESCE(?, status_aktif)
+      tanggal_keluar = ?, 
+      status_aktif = ?
     WHERE id = ?
   `;
 
@@ -1282,7 +1297,6 @@ app.post("/tambahDataPegawai", (req, res) => {
   // Koneksi ke database
   pool.getConnection((err, connect) => {
     if (err) {
-      console.error("Error saat koneksi ke database:", err);
       return res.status(500).json({ message: "Koneksi ke database gagal." });
     }
 
@@ -1305,7 +1319,6 @@ app.post("/tambahDataPegawai", (req, res) => {
       connect.release();
 
       if (err) {
-        console.error("Error saat menambahkan data pegawai:", err);
         return res.status(500).json({
           message: "Gagal menambahkan data pegawai.",
           error: err.message,
@@ -1588,6 +1601,27 @@ app.get("/jemaat/:no_urut", (req, res) => {
       return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
     }
     console.log("datajemaatbyid", results[0]);
+    res.status(200).json({ message: "Data ditemukan", data: results[0] });
+  });
+});
+
+app.get("/detailJemaat/:id_detail", (req, res) => {
+  const { id_detail } = req.params;
+
+  const query = "SELECT * FROM detail_jemaat WHERE id_detail = ?";
+
+  pool.query(query, [id_detail], (err, results) => {
+    if (err) {
+      console.error("Gagal mengambil data detail jemaat:", err);
+      return res
+        .status(500)
+        .json({ message: "Terjadi kesalahan pada server." });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
+    }
+    console.log("detailjemaatbyid", results[0]);
     res.status(200).json({ message: "Data ditemukan", data: results[0] });
   });
 });
